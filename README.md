@@ -6,3 +6,5 @@ z bazy danych,które już znamy.
 W razie pytań pisać do:
 Dr Antczaka
 Prof. Martę Szachniuk
+
+![Reprezentacja drugorzędnej struktury RNA](/README Sources/Representation.png)
