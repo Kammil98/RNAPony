@@ -7,4 +7,4 @@ W razie pytań pisać do:
 Dr Antczaka
 Prof. Martę Szachniuk
 
-![Reprezentacja drugorzędnej struktury RNA](/README\ Sources/Representation.png)
+![Reprezentacja drugorzędnej struktury RNA](/README%20Sources/Representation.png)
