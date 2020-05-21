@@ -1,0 +1,51 @@
+awk 'function bpset(SEQ, DOT){
+      L=length(DOT);ORDER=0;LBP=0;
+      for(I=1;I<=L;I++){D1=substr(DOT,I,1);
+        J1=index(BRACKET1,D1);
+        if(J1>0){D2=substr(BRACKET2,J1,1);H=1;J=I+1;
+          while((H>0)&&(J<=L)){
+            SP=substr(DOT,J,1);
+            if(SP==D1){H=H+1}
+            if(SP==D2){H=H-1}
+            J++
+                              }
+         if(SP==D2){LBP=LBP+1;W1[LBP]=I;W2[LBP]=J-1;
+#printf "LBP=%d %s%d %s%d\n",LBP,substr(SEQ,W1[LBP],1),W1[LBP],substr(SEQ,W2[LBP],1),W2[LBP]
+                   }
+                }
+                      }
+                             }
+     function homoloqy(seq,dot){
+     l=length(seq);HOMSEQ=0;HOMBP=0;
+     for(I=1;I<=l;I++){
+        if(substr(seq,I,1)==substr(SEQ0,I,1)){HOMSEQ=HOMSEQ+1}
+                      }
+     bpset(seq, dot)
+#for(I=1;I<=LBP;I++){printf "LBP=%d %s%d %s%d\n",I,substr(SEQ,W1[I],1),W1[I],substr(SEQ,W2[I],1),W2[I]}
+for(I=1;I<=LBP;I++){
+  for(I0=1;I0<=LBP0;I0++){
+    if((W01[I0]==W1[I])&&(W02[I0]==W2[I])){HOMBP=HOMBP+1}
+                         }
+                   }
+                               }
+
+BEGIN{BRACKET1="([{<ABCDEFGHIJKLMNOPQRSTUVWXYZ";BRACKET2=")]}>abcdefghijklmnopqrstuvwxyz"}
+     {if(NR==1){
+NAME=$1;SEQ0=$2;DOT0=$3;L0=length(SEQ0);
+bpset(SEQ0, DOT0);LBP0=LBP;
+printf "REFERENCE: %s\n",NAME
+printf "%s\n%s %d\n",SEQ0,DOT0,LBP0;
+for(i=1;i<=LBP0;i++){W01[i]=W1[i];W02[i]=W2[i]
+printf "LBP0=%d %s%d %s%d\n",i,substr(SEQ0,W01[i],1),W01[i],substr(SEQ0,W02[i],1),W02[i]
+                    }
+              }else{
+if(NF>11){
+sseq=$11;sdot=$12;
+for(ii=16;ii<=NF;ii=ii+5){sseq=sseq";"$ii;sdot=sdot";"$(ii+1)}
+# printf "%s\n%s\n",sseq,sdot
+homoloqy(sseq,sdot);l=length(sseq);
+#printf "%s %8.3f\n%s %3d\n",sseq,HOMSEQ*100/l,sdot,HOMBP
+printf "%s %8.3f %3d\n",$0,HOMSEQ*100/l,HOMBP
+         }
+                   }
+              }' $1
