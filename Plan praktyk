@@ -1,0 +1,44 @@
+# Roboczy plan praktyki:
+
+Cel: Reimplementacja kilku skryptów w języku C++ (3) oraz AWK (1) na język
+JAVA w taki sposób, aby zminimalizować występowanie identycznych
+fragmentów kodu jednocześnie w kilku plikach poprzez wdrożenie mechanizmów
+programowania obiektowego. Przygotowanie zestawu niezbędnych testów
+jednostkowych (jUnit) oraz dokumentacji technicznej (javadoc) dla każdego
+wytwarzanego pliku. Należy wykorzystać pakiet MAVEN. Staramy się
+minimalizować kod pisany samodzielnie koncentrując się na wykorzystywaniu
+dobrze przetestowanych przez społeczność bibliotek.
+
+Plan roboczy:
+
+I tydzien - Zapoznanie się z kodem i dostarczoną funkcjonalnością oraz
+początek procesu reimplementacji.
+Z1. Kompilacja, uruchomienie i eksperymentowanie z funkcjonalnością
+dostarczonego oprogramowania na podstawie dostarczonego pliku README.txt.
+Z2. Reimplementacja klasy StringTokenizer (.h,.cpp).
+Z3. Przygotowanie zestawu niezbędnych testów jednostkowych (jUnit) oraz
+dokumentacji technicznej (javadoc) dla klasy StringTokenizer.
+
+II tydzień - Projektowanie oraz reimplementacja plików cse_*.cpp.
+Z1. Dogłębna analiza dostarczonego kodu źródłowego plików cse_*.cpp w celu
+identyfikacji fragmentów współdzielonych oraz różnic, których znajomość
+jest kluczowa podczas przeprojektowywania ich do postaci jednego
+funkcjonalnego modułu.
+Z2. Opracowanie hierarchii klas oraz rozpoczęcie procesu implementacji.
+
+III tydzień - Reimplementacja plików cse_*.cpp oraz testowanie
+Z1. Dokończenie zadania drugiego z II tygodnia (o ile nie zostało ukończone).
+Z2. Przygotowanie zestawu niezbędnych testów jednostkowych (jUnit) oraz
+dokumentacji technicznej (javadoc) dla modułu wytworzonego w tygodniu
+poprzednim.
+Z3. Przeprowadzenie kompleksowych testów potwierdzających, że
+implementacje zarówno w C++ jak i w Javie działają prawidłowo.
+
+IV tydzień - Reimplementacja skryptu AWK (homology) wyznaczającego homologię.
+Z1. Uruchomienie oraz eksperymentowanie z funkcjonalnością dostarczonego
+oprogramowania na podstawie dostarczonego pliku README.txt.
+Z2. Reimplementacja skryptu do postaci modułu w Javie.
+Z3. Przygotowanie zestawu niezbędnych testów jednostkowych (jUnit) oraz
+dokumentacji technicznej (javadoc) dla wytworzonego oprogramowania.
+Z4. Przeprowadzenie kompleksowych testów potwierdzających, że
+implementacje zarówno w AWK jak i w Javie działają prawidłowo.
