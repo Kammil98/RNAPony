@@ -1,4 +1,4 @@
-package mainTokenizers;
+package maintokenizers;
 
 import java.util.*;
 import java.util.regex.MatchResult;

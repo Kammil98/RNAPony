@@ -1,3 +1,3 @@
 module Tokenizer {
-    exports mainTokenizers;
+    exports maintokenizers;
 }

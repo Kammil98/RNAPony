@@ -1,4 +1,4 @@
-package mainTokenizers;
+package maintokenizers;
 
 import org.junit.jupiter.api.Test;
 
