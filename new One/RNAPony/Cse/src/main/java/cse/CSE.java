@@ -1,6 +1,6 @@
 package cse;
 
-import maintokenizers.StringTokenizer;
+import maintokenizers.StringTokenizer;///check which one is fastest
 import models.Pair;
 import models.Sequence;
 
@@ -9,7 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Predicate;
-///check which one is fastest
+import java.util.stream.Collectors;
+
 
 public class CSE {
     //private ArrayList<String> vb_pdb, vb_chain, vb_top, vbs_bp, vb_seq;
@@ -17,6 +18,10 @@ public class CSE {
     //private ArrayList<Integer> vb_order;
     public static final String SEPARATORS = ";";
     private ArrayList<Sequence> sequences;
+    private ArrayList<String> seqs;
+    private ArrayList<String> tops;
+    private ArrayList<Integer> bbps;
+    private final Sequence sourceSequence;
 
     //functions create_vect and create_vectint from c++ version are replaced
     //by StringTokenizer.getStreamOfTokens(source, SEPARATORS)
@@ -33,9 +38,25 @@ public class CSE {
         vb_top = new ArrayList<>();
         vbs_bp = new ArrayList<>();
         vb_order = new ArrayList<>();*/
+        sourceSequence = new Sequence();
     }
 
-    public void readMpSeq(String fileName, Sequence sequence){
+    private void initData(String args[]){
+        Path filesPath = Path.of("./", "files"),
+                MpSeqFP = Path.of(filesPath.toString(), args[0]),
+                dBFP = Path.of(filesPath.toString(), args[1]);
+
+        readMpSeq(MpSeqFP.toString());
+        readDataBase(dBFP.toString());
+        seqs = StringTokenizer.getStreamOfTokens(sourceSequence.getSeq(), SEPARATORS)
+                .collect(Collectors.toCollection(ArrayList::new));
+        tops = StringTokenizer.getStreamOfTokens(sourceSequence.getTop(), SEPARATORS)
+                .collect(Collectors.toCollection(ArrayList::new));
+        bbps = StringTokenizer.getStreamOfTokens(sourceSequence.getTop(), SEPARATORS)
+                .map(s -> Integer.valueOf(s)).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public void readMpSeq(String fileName){
         try(BufferedReader reader =
                     new BufferedReader(
                     new InputStreamReader(
@@ -45,13 +66,13 @@ public class CSE {
             for(int lineNo = 1; (line = reader.readLine()) != null; lineNo++){
                 switch(lineNo){
                     case 1:
-                        sequence.setName(line.substring(1));
+                        getSourceSequence().setName(line.substring(1));
                         break;
                     case 2:
-                        sequence.setSeq(line);
+                        getSourceSequence().setSeq(line);
                         break;
                     case 3:
-                        sequence.setTop(line);
+                        getSourceSequence().setTop(line);
                         break;
                 }
             }
@@ -123,7 +144,6 @@ public class CSE {
         }*/
     }
 
-
     public boolean isOk(ArrayList<Pair> pairs, Pair testedPair){
         Predicate<Pair> isFirstBetween = pair -> pair.isPointBetweenInclusive(testedPair.getFirst());
         Predicate<Pair> isSecondBetween = pair -> pair.isPointBetweenInclusive(testedPair.getSecond());
@@ -132,17 +152,20 @@ public class CSE {
         return !pairs.stream().anyMatch(isNotOk);
     }
 
+    public void createPatternShift(){
 
-    public static void main(String args[]){
-        //To check different kind of things. Delete in release
-        /*Path curr = Path.of(".");
-        System.out.println(curr.toAbsolutePath());
-        CSE cse = new CSE();
-        Sequence seq = new Sequence();
-        cse.readMpSeq("./files/hairpin.dot", seq);*/
     }
+
+    public static void main(String args[]) {
+
+    }
+
 
     public ArrayList<Sequence> getSequences() {
         return sequences;
+    }
+
+    public Sequence getSourceSequence() {
+        return sourceSequence;
     }
 }

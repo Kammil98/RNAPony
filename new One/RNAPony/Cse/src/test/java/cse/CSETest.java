@@ -27,17 +27,16 @@ class CSETest {
 
     @Test
     void readMpSeq() {
-        Sequence expectedSeq = new Sequence(),
-                actualSeq = new Sequence();
+        Sequence expectedSeq = new Sequence();
         String msg = "Inapropriate reading hairpion.dot file";
         Path hairpinFile = Path.of(filesPath.toString(), "hairpin.dot");
         expectedSeq.setName("hairpin");
         expectedSeq.setSeq("CAGCGUCAAGCCCCGGCUUGCUG");
         expectedSeq.setTop("((((....((.[[[[[)).))))");
-        cse.readMpSeq(hairpinFile.toString(), actualSeq);
-        assertEquals(expectedSeq.getName(), actualSeq.getName(), msg);
-        assertEquals(expectedSeq.getSeq(), actualSeq.getSeq(), msg);
-        assertEquals(expectedSeq.getTop(), actualSeq.getTop(), msg);
+        cse.readMpSeq(hairpinFile.toString());
+        assertEquals(expectedSeq.getName(), cse.getSourceSequence().getName(), msg);
+        assertEquals(expectedSeq.getSeq(), cse.getSourceSequence().getSeq(), msg);
+        assertEquals(expectedSeq.getTop(), cse.getSourceSequence().getTop(), msg);
     }
 
     @Test
