@@ -161,7 +161,6 @@ public class CSE {
         return pairs.stream().noneMatch(isNotOk);
     }
 
-
     public void createPatternShift(){
 
     }

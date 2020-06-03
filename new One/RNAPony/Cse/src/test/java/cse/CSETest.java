@@ -44,10 +44,10 @@ class CSETest {
         Sequence expectedSeq0, expectedSeq4;
         Path cseFile = Path.of(filesPath.toString(), "cse.txt");
         String msg;
-        expectedSeq0 = new Sequence("157d", "A_B", 2.38f, "CGCGAAUUAGCG;CGCGAAUUAGCG;",
+        expectedSeq0 = new Sequence("157d", "A_B", 2.38d, "CGCGAAUUAGCG;CGCGAAUUAGCG;",
                 "(((.((((.(((.))).)))).))).", "24;22;20;0;16;14;12;10;0;6;4;2;0;-2;-4;-6;0;-10;-12;" +
                 "-14;-16;0;-20;-22;-24;0",0);
-        expectedSeq4 = new Sequence("1a3m", "A_B", 999.99f, "GGCGUCACACCUUC;GGGUGAAGUCGCC;",
+        expectedSeq4 = new Sequence("1a3m", "A_B", 999.99d, "GGCGUCACACCUUC;GGGUGAAGUCGCC;",
                 "((((.(.((((.....))))..).)))).", "27;25;23;21;0;17;0;12;10;8;6;0;0;0;0;0;-6;-8;-10;-12;0;0;" +
                 "-17;0;-21;-23;-25;-27;0",0);
         cse.readDataBase(cseFile.toString());
@@ -89,5 +89,33 @@ class CSETest {
         msg = "Mistake for collisionPair = (6, 9)";
         assertFalse(cse.isOk(pairs, checkedPair), msg);
         pairs.remove(collisionPair);
+    }
+
+    @Test
+    void createArray() {
+        String sequence = "GCUGGGCGCAGG;GCUGGGCGCAGG;CCUGACGGUACAGC;CCUGACGGUACAGC;";
+        ArrayList<String> actual = cse.createArray(sequence);
+        ArrayList<String> expected = new ArrayList<>();
+        expected.add("GCUGGGCGCAGG");
+        expected.add("GCUGGGCGCAGG");
+        expected.add("CCUGACGGUACAGC");
+        expected.add("CCUGACGGUACAGC");
+        assertArrayEquals(expected.toArray(), actual.toArray());
+
+        expected.clear();
+        expected.add("GCCAGGAUGUAGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGU");
+        sequence = "GCCAGGAUGUAGGCUUAGAAGCAGCCAUCAUUUAAAGAAAGCGUAAUAGCUCACUGGU;";
+        actual = cse.createArray(sequence);
+        assertArrayEquals(expected.toArray(), actual.toArray());
+    }
+
+    @Test
+    void createArrayInt() {
+        String sequence = "0;0;0;0;0;0;15;13;11;0;19;21;19;0;0;0;0;10;7;" +
+                "-11;-13;-15;0;0;0;-7;0;-10;0;-19;0;-19;-21;0;0;0";
+        Integer[] expected = {0,0,0,0,0,0,15,13,11,0,19,21,19,0,0,0,0,10,7,
+                -11,-13,-15,0,0,0,-7,0,-10,0,-19,0,-19,-21,0,0,0};
+        ArrayList<Integer> actual = cse.createArrayInt(sequence);
+        assertArrayEquals(expected, actual.toArray());
     }
 }
