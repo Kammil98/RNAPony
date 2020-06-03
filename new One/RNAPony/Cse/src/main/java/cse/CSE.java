@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 
 public class CSE {
+    public static final String BASE = "acgu";
     public static final String SEPARATORS = ";";
     private final ArrayList<Sequence> sequences;
     private ArrayList<String> seqs;
@@ -44,7 +45,7 @@ public class CSE {
 
         readMpSeq(MpSeqFP.toString());
         readDataBase(dBFP.toString());
-
+        System.out.printf("nameseq %s seq %s top %s%n", sourceSequence.getName(), sourceSequence.getSeq(), sourceSequence.getTop());
         setSeqs(createArray(sourceSequence.getSeq()));
         setTops(createArray(sourceSequence.getTop()));
         setBbps(createArrayInt(""));
