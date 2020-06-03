@@ -7,11 +7,11 @@ public class Sequence {
     private String chain;
     private String top;
     private String bp;
-    private float resol;
+    private double resol;
     private int order;
 
     public Sequence(){}
-    public Sequence(String pdb, String chain, float resol, String seq,
+    public Sequence(String pdb, String chain, double resol, String seq,
                     String top, String bp, int order) {
         this.seq = seq;
         this.pdb = pdb;
@@ -149,7 +149,7 @@ public class Sequence {
      *
      * @return the resol
      */
-    public float getResol() {
+    public double getResol() {
         return resol;
     }
 
@@ -158,7 +158,7 @@ public class Sequence {
      *
      * @param resol the resol
      */
-    public void setResol(float resol) {
+    public void setResol(double resol) {
         this.resol = resol;
     }
 
