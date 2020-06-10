@@ -1,6 +1,6 @@
 module Cse {
     requires Tokenizer;
-    requires lombok;
+    //requires static lombok;
     exports cse;
     exports models;
 }

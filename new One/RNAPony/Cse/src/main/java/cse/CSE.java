@@ -11,8 +11,9 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
 public class CSE {
+    public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
+    public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
     public static final String SEPARATORS = ";";
     private final ArrayList<Sequence> sequences;
@@ -30,6 +31,18 @@ public class CSE {
         tops = new ArrayList<>();
         bbps = new ArrayList<>();
         sourceSequence = new Sequence();
+    }
+
+    public static boolean isArgsNotOk(String[] args, int expectedNo){
+        if(args.length != expectedNo){
+            System.out.println("Inappropriate number of arguments (given " + args.length + " while " + expectedNo + " was expected)\n");
+            System.out.print("Usage : a.out <filename_dot> <filename_database> insert");
+            if(expectedNo == 4)
+                System.out.print("Usage : a.out <filename_dot> <filename_database> insert isLoopOpen");
+            System.out.print("\n");
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -114,7 +127,7 @@ public class CSE {
             String pdb, chain, seq, top, bp;
             double resol;
             int order;
-            for(StringTokenizer tokenizer = null;
+            for(StringTokenizer tokenizer;
                 (line = reader.readLine()) != null;){
 
                 tokenizer = new StringTokenizer(line, " ");
@@ -162,11 +175,68 @@ public class CSE {
         return pairs.stream().noneMatch(isNotOk);
     }
 
-    public void createPatternShift(){
-
+    /**
+     * concat Top from newSequence with fragment of tmp string from n to n + vlength
+     * and concat Seq from newSequence with fragment of sequence.seq string from n to n + vlength
+     * @param newSequence sequence to concat strings
+     * @param sequence sequence with substring to add to Seq
+     * @param tmp stringbuilder with substring to add to ToP
+     * @param start start position of substring
+     * @param vlength length of substring
+     */
+    private void concatTopAndSeq(Sequence newSequence, Sequence sequence, StringBuilder tmp, int start, int vlength){
+        newSequence.setTop(newSequence.getTop().concat(
+                tmp.substring(start, start + vlength)
+        ));/*tops_new+=c;*/
+        newSequence.setSeq(newSequence.getSeq().concat(
+                sequence.getSeq().substring(start, start + vlength)
+        ));/*seqs_new+=c;*/
     }
 
-    public static void main(String args[]) {
+    /**
+     * Unused function, to future expansion of program
+     * @param sequence base sequence
+     * @param vlength_seq list of lengths
+     * @param vbp1_pos first list of bp_pos
+     * @param vbp2_pos second list of bp_pos
+     * @param vbp_order list of orders
+     * @param newSequence new sequence
+     */
+    private void createPatternShift(Sequence sequence, ArrayList<Integer> vlength_seq, ArrayList<Integer> vbp1_pos,
+            ArrayList<Integer> vbp2_pos, ArrayList<Integer> vbp_order, Sequence newSequence){
+        char c1, c2;
+        int n;
+        final String c = CSE.SEPARATORS;
+        StringBuilder tmp = new StringBuilder(sequence.getTop());
+        newSequence.setSeq("");
+        newSequence.setTop("");
+
+        if(vlength_seq.isEmpty()) {
+            newSequence.setSeq(sequence.getSeq());
+            newSequence.setTop(sequence.getTop());
+        }
+        else {
+            for(int i = 0; i < vbp1_pos.size(); i++ ){
+                if(vbp1_pos.get(i) < vlength_seq.get(0) && vbp1_pos.get(i) >= vlength_seq.get(0)){
+                    c1 = CHARS_BP2.charAt(vbp_order.get(i));
+                    c2 = CHARS_BP1.charAt(vbp_order.get(i));
+                    tmp.setCharAt(vbp1_pos.get(i), c1);
+                    tmp.setCharAt(vbp2_pos.get(i), c2);
+                }
+            }
+            n = vlength_seq.get(0);
+            concatTopAndSeq(newSequence, sequence, tmp, n, vlength_seq.get(1));
+            int last = vlength_seq.get(1);
+            for(int vlength : vlength_seq.subList(2, vlength_seq.size())){
+                n += last;
+                concatTopAndSeq(newSequence, sequence, tmp, n, vlength);
+                last = vlength;
+            }
+            concatTopAndSeq(newSequence, sequence, tmp, 0, vlength_seq.get(0));
+        }
+    }
+
+    public static void main(String[] args) {
 
     }
 
