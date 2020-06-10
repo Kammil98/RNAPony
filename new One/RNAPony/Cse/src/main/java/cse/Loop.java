@@ -4,6 +4,7 @@ import models.Pair;
 import models.Sequence;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 public class Loop extends CSE{
 
@@ -19,10 +20,11 @@ public class Loop extends CSE{
         this.openLoop = openLoop;
     }
 
-    public static void printResult(Sequence sequence, ArrayList<Pair> pairs, ArrayList<Integer> steps, int i1){
+    private static void printResult(Sequence sequence, ArrayList<Pair> pairs, ArrayList<Integer> steps, int i1){
         li++;
-        System.out.printf("NR %5d ins %d %s %s %5.2f", li, i1,
-                sequence.getPdb(), sequence.getChain(), sequence.getResol());
+        StringBuilder msg = new StringBuilder();
+        msg.append(String.format("NR %5d ins %d %s %s %s", li, i1,
+                sequence.getPdb(), sequence.getChain(), sequence.getResol()));
         int pairNo = -1;
         int step;
         int from, to, end;
@@ -40,14 +42,14 @@ public class Loop extends CSE{
                 to = pair.getFirst();
                 end = from - (step - 1);
             }
-            System.out.printf(" %d - %d %s %s", from + 1, to + 1,
+            msg.append(String.format(" %d - %d %s %s", from + 1, to + 1,
                     sequence.getSeq().substring(from, end),
-                    sequence.getTop().substring(from, end));
+                    sequence.getTop().substring(from, end)));
         }
-        System.out.print("\n");
+        CSE.logger.log(Level.INFO, msg.toString());
     }
 
-    public static void prepareArrays(Loop loop, ArrayList<Integer> steps,
+    private static void prepareArrays(Loop loop, ArrayList<Integer> steps,
                                      ArrayList<Integer> steps_origin, ArrayList<Boolean> direct){
         for(String seq: loop.getSeqs()){
             steps_origin.add(seq.length() - 1);
@@ -56,7 +58,7 @@ public class Loop extends CSE{
         }
     }
 
-    public static void computeStartAndLimit(Loop loop, Sequence sequence, int firstStep){
+    private static void computeStartAndLimit(Loop loop, Sequence sequence, int firstStep){
         loop.setBbps( loop.createArrayInt(sequence.getBp()));
         limit = loop.getBbps().size();
         for(int i = 0; i < 20; i++)
@@ -69,7 +71,7 @@ public class Loop extends CSE{
             start = -firstStep;
     }
 
-    public static void compute(Loop loop, Sequence sequence, int i, int i1,
+    private static void compute(Loop loop, Sequence sequence, int i, int i1,
                                ArrayList<Integer> steps, ArrayList<Pair> pairs){
         boolean breaked = false;
         int x1, x2;
@@ -116,7 +118,7 @@ public class Loop extends CSE{
         for(int i0 = steps_origin.size() - 1;
             i0 < ((nins + 1) * steps_origin.size()); i0++){
             i1 = i0 / steps_origin.size();
-            System.out.println("INSERT= " + i1);
+            CSE.logger.log(Level.INFO, "INSERT= " + i1);
             i2 = i0 % steps_origin.size();
             if(direct.get(i2))
                 steps.set(i2, steps_origin.get(i2) + i1);

@@ -5,13 +5,17 @@ import models.Pair;
 import models.Sequence;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Predicate;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 
 public class CSE {
+    public static final Logger logger;
+    private static boolean saveToFile = false;
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
     public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
@@ -22,10 +26,42 @@ public class CSE {
     private ArrayList<Integer> bbps;
     private final Sequence sourceSequence;
 
+    static{
+        logger = Logger.getLogger(cse.CSE.class.getName());
+        Handler handler = null;
+        System.setProperty("java.util.logging.SimpleFormatter.format",
+                "%5$s%n");
+        logger.setUseParentHandlers(false);
+        Path filePath = Path.of("./", "default.txt");
+        changeLogFile(filePath);
+    }
+
+    /**
+     * Change file, where logs will be saving
+     * @param filePath path to file, to write logs in
+     */
+    public static void changeLogFile(Path filePath){
+        for(Handler handler : logger.getHandlers())//remove old handlers
+            logger.removeHandler(handler);
+        Handler handler = null;
+        if(isSaveToFile()){
+            try {
+                handler = new FileHandler(filePath.toString(), false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else
+            handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        logger.addHandler(handler);
+    }
+
     /**
      *  Initialize CSE attributes
      */
     public CSE(){
+
         sequences = new ArrayList<>();
         seqs = new ArrayList<>();
         tops = new ArrayList<>();
@@ -33,16 +69,29 @@ public class CSE {
         sourceSequence = new Sequence();
     }
 
+    /**
+     * Check if number of given arguments is incorrect
+     * @param args list of given arguments
+     * @param expectedNo demanded number of arguments
+     * @return true, if number of arguments if incorrect. False otherwise
+     */
     public static boolean isArgsNotOk(String[] args, int expectedNo){
         if(args.length != expectedNo){
-            System.out.println("Inappropriate number of arguments (given " + args.length + " while " + expectedNo + " was expected)\n");
-            System.out.print("Usage : a.out <filename_dot> <filename_database> insert");
+            logger.info("Inappropriate number of arguments (given " + args.length + " while " + expectedNo + " was expected)");
+            logger.info("Usage : a.out <filename_dot> <filename_database> insert");
             if(expectedNo == 4)
-                System.out.print("Usage : a.out <filename_dot> <filename_database> insert isLoopOpen");
-            System.out.print("\n");
+                logger.info("Usage : a.out <filename_dot> <filename_database> insert isLoopOpen");
             return true;
         }
         return false;
+    }
+
+    public static boolean isSaveToFile() {
+        return saveToFile;
+    }
+
+    public static void setSaveToFile(boolean saveToFile) {
+        CSE.saveToFile = saveToFile;
     }
 
     /**
@@ -52,13 +101,19 @@ public class CSE {
      * @param dbFile name of file with sequences from database
      */
     public void initData(String MPseqFile, String dbFile){
-        Path filesPath = Path.of("./", "files"),
+        Path startPath;
+        if(Files.exists(Path.of("./","files"))){//Release Path
+            startPath = Path.of("./", "files");
+        }
+        else{//Test Path
+            startPath = Path.of("../", "files");
+        }
+        Path filesPath = Path.of(startPath.toString()),
                 MpSeqFP = Path.of(filesPath.toString(), MPseqFile),
                 dBFP = Path.of(filesPath.toString(), dbFile);
-
         readMpSeq(MpSeqFP.toString());
         readDataBase(dBFP.toString());
-        System.out.printf("nameseq %s seq %s top %s%n", sourceSequence.getName(), sourceSequence.getSeq(), sourceSequence.getTop());
+        logger.info(String.format("%s %s %s", sourceSequence.getName(), sourceSequence.getSeq(), sourceSequence.getTop()));
         setSeqs(createArray(sourceSequence.getSeq()));
         setTops(createArray(sourceSequence.getTop()));
         setBbps(createArrayInt(""));
@@ -155,8 +210,8 @@ public class CSE {
         int counter = 0;
         while (seqsIter.hasNext()){
             counter++;
-            System.out.printf("%5d\n", counter);
-            System.out.println(seqsIter.next());
+            logger.info(String.format("%5d", counter));
+            logger.info(seqsIter.next().toString());
         }
     }
 
