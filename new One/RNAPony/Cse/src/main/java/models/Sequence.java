@@ -1,13 +1,24 @@
 package models;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class Sequence {
+    @Getter @Setter
     private String name;
+    @Getter @Setter
     private String seq;
+    @Getter @Setter
     private String pdb;
+    @Getter @Setter
     private String chain;
+    @Getter @Setter
     private String top;
+    @Getter @Setter
     private String bp;
+    @Getter @Setter
     private double resol;
+    @Getter @Setter
     private int order;
 
     public Sequence(){}
@@ -34,149 +45,5 @@ public class Sequence {
         information += String.format("TOPOLOGY: %s\n", top);
         information += String.format("BPSEQ:    %s\n", bp);
         return information;
-    }
-
-    /**
-     * Gets name.
-     *
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets name.
-     *
-     * @param name the name
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Gets seq.
-     *
-     * @return the seq
-     */
-    public String getSeq() {
-        return seq;
-    }
-
-    /**
-     * Sets seq.
-     *
-     * @param seq the seq
-     */
-    public void setSeq(String seq) {
-        this.seq = seq;
-    }
-
-    /**
-     * Gets top.
-     *
-     * @return the top
-     */
-    public String getTop() {
-        return top;
-    }
-
-    /**
-     * Sets top.
-     *
-     * @param top the top
-     */
-    public void setTop(String top) {
-        this.top = top;
-    }
-
-    /**
-     * Gets pdb.
-     *
-     * @return the pdb
-     */
-    public String getPdb() {
-        return pdb;
-    }
-
-    /**
-     * Sets pdb.
-     *
-     * @param pdb the pdb
-     */
-    public void setPdb(String pdb) {
-        this.pdb = pdb;
-    }
-
-    /**
-     * Gets chain.
-     *
-     * @return the chain
-     */
-    public String getChain() {
-        return chain;
-    }
-
-    /**
-     * Sets chain.
-     *
-     * @param chain the chain
-     */
-    public void setChain(String chain) {
-        this.chain = chain;
-    }
-
-    /**
-     * Gets bp.
-     *
-     * @return the bp
-     */
-    public String getBp() {
-        return bp;
-    }
-
-    /**
-     * Sets bp.
-     *
-     * @param bp the bp
-     */
-    public void setBp(String bp) {
-        this.bp = bp;
-    }
-
-    /**
-     * Gets resol.
-     *
-     * @return the resol
-     */
-    public double getResol() {
-        return resol;
-    }
-
-    /**
-     * Sets resol.
-     *
-     * @param resol the resol
-     */
-    public void setResol(double resol) {
-        this.resol = resol;
-    }
-
-    /**
-     * Gets order.
-     *
-     * @return the order
-     */
-    public int getOrder() {
-        return order;
-    }
-
-    /**
-     * Sets order.
-     *
-     * @param order the order
-     */
-    public void setOrder(int order) {
-        this.order = order;
     }
 }
