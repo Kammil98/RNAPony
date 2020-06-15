@@ -33,6 +33,7 @@ filename_mp_seq=argv[1];filename_database=argv[2];nins=atoi(argv[3]);
 read_mp_seq(filename_mp_seq, nameseq, seq, top);cout << nameseq << " " << seq << " " << top << endl;
 read_database(filename_database,vb_pdb, vb_chain, vb_resol, vb_seq, vb_top, vbs_bp, vb_order);
 create_vect(seq,seqs);create_vect(top,tops);create_vectint(bbp,bbps);
+//cout << "seqs.size()= " << seqs.size() << endl;
 for(int i=0;i<seqs.size();i++){steps_origin.push_back(seqs[i].length()-1);steps.push_back(seqs[i].length()-1);
 	if(base.find(seqs[i].substr(0,1))==string::npos){direct.push_back(true);}else{direct.push_back(false);/*steps_origin[i]=-steps_origin[i];*/}
                               }
@@ -64,7 +65,7 @@ if(steps[k]>0){cout << " " << n[k].first+1 << " - " << n[k].second+1 << " " << v
                            }
 cout << endl;
 	                  }
-	                 } 
+	                 }
 	                                    }
                                        }
                                     } // for a
@@ -110,6 +111,8 @@ for(int i=0;i<vb_pdb.size();i++){
 void create_vect(const string& source, vector<string>& target){
 if(target.size()!=string::npos){target.clear();}
 string::size_type ii=0,jj = source.find(SEPARATOR);
+//the line below was added by student
+if(jj==string::npos && source.length() != 0){target.push_back(source.substr(ii,source.length()));}
 while(jj!=string::npos){target.push_back(source.substr(ii,jj-ii));ii=++jj;jj=source.find(SEPARATOR,jj);
 if(jj==string::npos){target.push_back(source.substr(ii,source.length()));}
 }}
@@ -117,6 +120,8 @@ if(jj==string::npos){target.push_back(source.substr(ii,source.length()));}
 void create_vectint(const string& source, vector<int>& target){
 if(target.size()!=string::npos){target.clear();}
 string::size_type ii=0,jj = source.find(SEPARATOR);
+//the line below was added by student
+if(jj==string::npos && source.length() != 0){target.push_back(strToNum<int>(source.substr(ii,source.length())));}
 while(jj!=string::npos){target.push_back(strToNum<int>(source.substr(ii,jj-ii)));ii=++jj;jj=source.find(SEPARATOR,jj);
 if(jj==string::npos){target.push_back(strToNum<int>(source.substr(ii,source.length())));}
 }}
@@ -161,4 +166,3 @@ for(vector<int>::size_type i=0; i<vbp1_pos.size(); i++){
                         seqs_new+=seq.substr(n,vlength_seq[i+1]);/*seqs_new+=c;*/}
   tops_new+=tmp.substr(0,vlength_seq[0]);seqs_new+=seq.substr(0,vlength_seq[0]);
 }}
-
