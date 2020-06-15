@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LoopTest {
+class HairpinTest {
     private final Logger logger = Logger.getLogger(cse.CSETest.class.getName());
     private static Path resultsFilesPath;
 
@@ -51,17 +51,13 @@ class LoopTest {
 
     /**
      * Preparing CSE params to test if two files are equal and test it
-     * @param cppFileName name of file with result of cpp program
-     * @param javaFileName name of file with result of java program
-     * @param sourceFileName name of file with source Sequence
-     * @param insertion number of insertions
      */
-    private void checkFile(String cppFileName, String javaFileName, String sourceFileName, String insertion, String loopOpen){
-        Path cppFilePath = Path.of(resultsFilesPath.toString(), "c++", cppFileName);
-        Path javaFilePath = Path.of(resultsFilesPath.toString(), "java", javaFileName);
+    private void checkFile(){
+        Path cppFilePath = Path.of(resultsFilesPath.toString(), "c++", "hairpin.txt");
+        Path javaFilePath = Path.of(resultsFilesPath.toString(), "java", "hairpin.txt");
         CSE.changeLogFile(javaFilePath);
-        String[] args = {sourceFileName, "cse.txt", insertion, loopOpen};
-        Loop.main(args);
+        String[] args = {"hairpin.dot", "cse.txt", "0"};
+        Hairpin.main(args);
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
         if(!new File(javaFilePath.toString()).delete()){
             logger.warning("Couldn't delete file at: " + javaFilePath.toString());
@@ -69,68 +65,8 @@ class LoopTest {
     }
 
     @Test
-    void bulge() {
-        checkFile("bulge.txt", "bulge.txt",
-                "bulge.dot", "0", "0");
-    }
-
-    @Test
-    void bulge1(){
-        checkFile("bulge1.txt", "bulge1.txt",
-                "bulge1.dot", "0", "0");
-    }
-
-    /*@Test
-    void ur15_spinka(){
-        checkFile("ur15_spinka.txt", "ur15_spinka.txt",
-                    "ur15_spinka.dot", "0", "0");
-    }*/
-
-    @Test
-    void dinucl_steps(){
-        checkFile("dinucl_steps.txt", "dinucl_steps.txt",
-                "dinucl_steps.dot", "0", "0");
-    }
-
-    @Test
-    void ur4_L1_0(){
-        checkFile("ur4_L1_0.txt", "ur4_L1_0.txt",
-                "ur4_L1.dot", "0", "0");
-    }
-
-    @Test
-    void ur4_L1_1(){
-        checkFile("ur4_L1_1.txt", "ur4_L1_1.txt",
-                "ur4_L1.dot", "1", "0");
-    }
-
-    @Test
-    void ur4_L2_0(){
-        checkFile("ur4_L2_0.txt", "ur4_L2_0.txt",
-                "ur4_L2.dot", "0", "0");
-    }
-
-    @Test
-    void ur4_L2_1(){
-        checkFile("ur4_L2_1.txt", "ur4_L2_1.txt",
-                "ur4_L2.dot", "1", "0");
-    }
-
-    @Test
-    void bp(){
-        checkFile("bp.txt", "bp.txt",
-                "bp.dot", "0", "1");
-    }
-
-    @Test
-    void bps2_4(){
-        checkFile("bps2_4.txt", "bps2_4.txt",
-                "bps2_4.dot", "0", "1");
-    }
-
-    @Test
-    void bps3_4_10_20(){
-        checkFile("bps3_4_10_20.txt", "bps3_4_10_20.txt",
-                "bps3_4_10_20.dot", "0", "1");
+    void hairpin() {
+        checkFile(
+        );
     }
 }
