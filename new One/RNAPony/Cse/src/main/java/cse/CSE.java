@@ -1,6 +1,6 @@
 package cse;
 
-import maintokenizers.StringTokenizer;///check which one is fastest
+import maintokenizers.StringTokenizer;
 import models.Pair;
 import models.Sequence;
 
@@ -13,9 +13,12 @@ import java.util.function.Predicate;
 import java.util.logging.*;
 import java.util.stream.Collectors;
 
-public class CSE {
-    public static final Logger logger;
-    private static boolean saveToFile = false;
+public abstract class CSE {
+    private String sequenceFileName;
+    private String dBFileName;
+    private int insertion;
+    public final Logger logger;
+    private boolean saveToFile = false;
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
     public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
@@ -26,21 +29,11 @@ public class CSE {
     private ArrayList<Integer> bbps;
     private final Sequence sourceSequence;
 
-    static{
-        logger = Logger.getLogger(cse.CSE.class.getName());
-        Handler handler = null;
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-                "%5$s%n");
-        logger.setUseParentHandlers(false);
-        Path filePath = Path.of("./", "default.txt");
-        changeLogFile(filePath);
-    }
-
     /**
      * Change file, where logs will be saving
      * @param filePath path to file, to write logs in
      */
-    public static void changeLogFile(Path filePath){
+    public void changeLogFile(Path filePath){
         for(Handler handler : logger.getHandlers()){//remove old handlers
             handler.close();
             logger.removeHandler(handler);
@@ -52,6 +45,7 @@ public class CSE {
                 handler = new FileHandler(filePath.toString(), false);
             } catch (IOException e) {
                 e.printStackTrace();
+                System.exit(-1);
             }
         }
         else
@@ -61,33 +55,35 @@ public class CSE {
     }
 
     /**
-     *  Initialize CSE attributes
+     * Initialize CSE and read database
+     * @param sequenceFileName name of file with searching sequence
+     * @param dBFileName name of file with database
+     * @param insertion number of insertions
      */
-    public CSE(){
+    public CSE(String sequenceFileName, String dBFileName, int insertion){
+        logger = Logger.getLogger(cse.CSE.class.getName());
+        System.setProperty("java.util.logging.SimpleFormatter.format",
+                "%5$s%n");
+        logger.setUseParentHandlers(false);
+        changeLogFile(Path.of("./", "default.txt"));
 
+        this.setSequenceFileName(sequenceFileName);
+        this.setdBFileName(dBFileName);
+        this.setInsertion(insertion);
         sequences = new ArrayList<>();
         seqs = new ArrayList<>();
         tops = new ArrayList<>();
         bbps = new ArrayList<>();
         sourceSequence = new Sequence();
+
+        initData(sequenceFileName, dBFileName);
     }
 
     /**
-     * Check if number of given arguments is incorrect
-     * @param args list of given arguments
-     * @param expectedNo demanded number of arguments
-     * @return true, if number of arguments if incorrect. False otherwise
+     * Main function, which calculate
+     * and display sequences
      */
-    public static boolean isArgsNotOk(String[] args, int expectedNo){
-        if(args.length != expectedNo){
-            logger.info("Inappropriate number of arguments (given " + args.length + " while " + expectedNo + " was expected)");
-            logger.info("Usage : a.out <filename_dot> <filename_database> insert");
-            if(expectedNo == 4)
-                logger.info("Usage : a.out <filename_dot> <filename_database> insert isLoopOpen");
-            return true;
-        }
-        return false;
-    }
+    public abstract void findSequences();
 
     /**
      * Read necessary data from files.
@@ -108,7 +104,6 @@ public class CSE {
                 dBFP = Path.of(filesPath.toString(), dbFile);
         readMpSeq(MpSeqFP.toString());
         readDataBase(dBFP.toString());
-        logger.info(String.format("%s %s %s", sourceSequence.getName(), sourceSequence.getSeq(), sourceSequence.getTop()));
         setSeqs(createArray(sourceSequence.getSeq()));
         setTops(createArray(sourceSequence.getTop()));
         setBbps(createArrayInt(""));
@@ -164,7 +159,7 @@ public class CSE {
     }
 
     /**
-     * Read necessary data about sequences from files.
+     * Read necessary data about sequences from database.
      * @param fileName name of file with database of sequences
      */
     public void readDataBase(String fileName){
@@ -256,7 +251,6 @@ public class CSE {
             ArrayList<Integer> vbp2_pos, ArrayList<Integer> vbp_order, Sequence newSequence){
         char c1, c2;
         int n;
-        final String c = CSE.SEPARATORS;
         StringBuilder tmp = new StringBuilder(sequence.getTop());
         newSequence.setSeq("");
         newSequence.setTop("");
@@ -286,12 +280,12 @@ public class CSE {
         }
     }
 
-    public static boolean isSaveToFile() {
+    public boolean isSaveToFile() {
         return saveToFile;
     }
 
-    public static void setSaveToFile(boolean saveToFile) {
-        CSE.saveToFile = saveToFile;
+    public void setSaveToFile(boolean saveToFile) {
+        this.saveToFile = saveToFile;
     }
 
     public ArrayList<Sequence> getSequences() {
@@ -324,5 +318,29 @@ public class CSE {
 
     public void setBbps(ArrayList<Integer> bbps) {
         this.bbps = bbps;
+    }
+
+    public String getSequenceFileName() {
+        return sequenceFileName;
+    }
+
+    public void setSequenceFileName(String sequenceFileName) {
+        this.sequenceFileName = sequenceFileName;
+    }
+
+    public int getInsertion() {
+        return insertion;
+    }
+
+    public void setInsertion(int insertion) {
+        this.insertion = insertion;
+    }
+
+    public String getdBFileName() {
+        return dBFileName;
+    }
+
+    public void setdBFileName(String dBFileName) {
+        this.dBFileName = dBFileName;
     }
 }

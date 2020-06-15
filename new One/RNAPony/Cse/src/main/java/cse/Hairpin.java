@@ -7,11 +7,21 @@ import java.util.logging.Level;
 
 public class Hairpin extends CSE{
 
-    private static int li;
-    private static int step;
-    private static boolean ok;
+    private int li;
+    private int step;
+    private boolean ok;
 
-    private static void compute(Sequence sequence, int bbpNo, int i1, Hairpin hp){
+    /**
+     * Initialize Hairpin and read database
+     * @param sequenceFileName name of file with searching sequence
+     * @param dBFileName name of file with database
+     * @param insertion number of insertions
+     */
+    public Hairpin(String sequenceFileName, String dBFileName, int insertion) {
+        super(sequenceFileName, dBFileName, insertion);
+    }
+
+    private void compute(Sequence sequence, int bbpNo, int i1){
         li++;
         int x1, x2;
         StringBuilder msg = new StringBuilder();
@@ -20,10 +30,10 @@ public class Hairpin extends CSE{
         msg.append(String.format(" %d - %d %s %s", bbpNo + 1, bbpNo + 1 + step,
                 sequence.getSeq().substring(bbpNo, bbpNo + step + 1),
                 sequence.getTop().substring(bbpNo, bbpNo + step + 1)));
-        CSE.logger.log(Level.INFO, msg.toString());
+        logger.log(Level.INFO, msg.toString());
         x2 = bbpNo + step;
         int bbp2No = bbpNo - 1;
-        for(int bbp2: hp.getBbps().subList(bbpNo, x2)){
+        for(int bbp2: getBbps().subList(bbpNo, x2)){
             bbp2No++;
             if(bbp2 != 0){
                 x1 = bbp2No + bbp2;
@@ -31,38 +41,35 @@ public class Hairpin extends CSE{
                     ok = true;
                     msg = new StringBuilder(String.format(" %d %d %s %s", bbp2No + 1, x1 + 1,
                             sequence.getSeq().substring(x1, x1 + 1), sequence.getTop().substring(x1, x1 + 1)));
-                    CSE.logger.log(Level.INFO, msg.toString());
+                    logger.log(Level.INFO, msg.toString());
                 }
             }
         }
         if(ok){
-            CSE.logger.info("");
+            logger.info("");
             ok = false;
         }
     }
 
-    public static void main(String[] args){
+    public void findSequences(){
         li = 0;
         ok = false;
-        Hairpin hp = new Hairpin();
         int step_origin, nins;
 
-        if(isArgsNotOk(args, 3))
-            return;
-        nins = Integer.parseInt(args[2]);
-        hp.initData(args[0], args[1]);
-        step_origin = hp.getSourceSequence().getSeq().length() - 1;
-
+        nins = getInsertion();
+        step_origin = getSourceSequence().getSeq().length() - 1;
+        logger.info(String.format("%s %s %s", getSourceSequence().getName(),
+                getSourceSequence().getSeq(), getSourceSequence().getTop()));
         for(int i1 = 0; i1 <= nins; i1++){
-            CSE.logger.log(Level.INFO, "INSERT= " + i1);
+            logger.log(Level.INFO, "INSERT= " + i1);
             step = step_origin + i1;
-            for(Sequence sequence: hp.getSequences()){
-                hp.setBbps(hp.createArrayInt(sequence.getBp()));
+            for(Sequence sequence: getSequences()){
+                setBbps(createArrayInt(sequence.getBp()));
                 int bbpNo = -1;
-                for(int bbp: hp.getBbps()){
+                for(int bbp: getBbps()){
                     bbpNo++;
                     if(bbp == step)
-                        compute(sequence, bbpNo, i1, hp);
+                        compute(sequence, bbpNo, i1);
                 }
             }
         }

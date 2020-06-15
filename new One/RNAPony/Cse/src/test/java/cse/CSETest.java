@@ -22,7 +22,7 @@ class CSETest {
 
     @BeforeEach
     public void init(){
-        cse = new CSE();
+        cse = new Hairpin("hairpin.dot", "cse.txt", 0);
     }
 
     @Test
