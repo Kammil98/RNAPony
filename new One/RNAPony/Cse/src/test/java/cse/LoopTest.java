@@ -19,11 +19,11 @@ class LoopTest extends FileChecker{
         checkFile("bulge1.txt", "bulge1.txt", loop);
     }
 
-    /*@Test
+    @Test
     void ur15_spinka(){
-        checkFile("ur15_spinka.txt", "ur15_spinka.txt",
-                    "ur15_spinka.dot", 0, false);
-    }*/
+        loop = new Loop("ur15_spinka.dot", "cse.txt", 0, false);
+        checkFile("ur15_spinka.txt", "ur15_spinka.txt", loop);
+    }
 
     @Test
     void dinucl_steps(){
