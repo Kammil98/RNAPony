@@ -21,6 +21,12 @@ public class Hairpin extends CSE{
         super(sequenceFileName, dBFileName, insertion);
     }
 
+    /**
+     * Compute, wheather given sequence match or not
+     * @param sequence sequence to check
+     * @param bbpNo counter from outer function
+     * @param i1 counter from outer function
+     */
     private void compute(Sequence sequence, int bbpNo, int i1){
         li++;
         int x1, x2;
@@ -51,6 +57,9 @@ public class Hairpin extends CSE{
         }
     }
 
+    /**
+     * Find sequences from database, which matches
+     */
     public void findSequences(){
         li = 0;
         ok = false;

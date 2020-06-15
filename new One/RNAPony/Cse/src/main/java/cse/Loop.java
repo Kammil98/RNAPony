@@ -24,6 +24,13 @@ public class Loop extends CSE{
         this.openLoop = openLoop;
     }
 
+    /**
+     * Finding subsequence in given sequence and print it
+     * @param sequence sequence with subsequence to extract
+     * @param pairs array of pairs
+     * @param steps array of steps
+     * @param i1 counter from outer function
+     */
     private void printResult(Sequence sequence, ArrayList<Pair> pairs, ArrayList<Integer> steps, int i1){
         li++;
         StringBuilder msg = new StringBuilder();
@@ -53,6 +60,12 @@ public class Loop extends CSE{
         logger.log(Level.INFO, msg.toString());
     }
 
+    /**
+     * initialize arrays
+     * @param steps array of steps
+     * @param steps_origin array of origin steps
+     * @param direct direct array
+     */
     private void prepareArrays(ArrayList<Integer> steps,
                                      ArrayList<Integer> steps_origin, ArrayList<Boolean> direct){
         for(String seq: getSeqs()){
@@ -62,6 +75,11 @@ public class Loop extends CSE{
         }
     }
 
+    /**
+     * Compute values of start and limit
+     * @param sequence currently checking sequence
+     * @param firstStep first step
+     */
     private void computeStartAndLimit(Sequence sequence, int firstStep){
         setBbps( createArrayInt(sequence.getBp()));
         limit = getBbps().size();
@@ -102,6 +120,9 @@ public class Loop extends CSE{
         }
     }
 
+    /**
+     * Find sequences from database, which matches
+     */
     public void findSequences(){
         li = 0;
         int nins;
