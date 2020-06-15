@@ -89,14 +89,6 @@ public class CSE {
         return false;
     }
 
-    public static boolean isSaveToFile() {
-        return saveToFile;
-    }
-
-    public static void setSaveToFile(boolean saveToFile) {
-        CSE.saveToFile = saveToFile;
-    }
-
     /**
      * Read necessary data from files.
      * All files should be placed in "files" folder
@@ -294,10 +286,13 @@ public class CSE {
         }
     }
 
-    public static void main(String[] args) {
-
+    public static boolean isSaveToFile() {
+        return saveToFile;
     }
 
+    public static void setSaveToFile(boolean saveToFile) {
+        CSE.saveToFile = saveToFile;
+    }
 
     public ArrayList<Sequence> getSequences() {
         return sequences;

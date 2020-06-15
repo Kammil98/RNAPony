@@ -10,6 +10,7 @@ public class Hairpin extends CSE{
     private static int li;
     private static int step;
     private static boolean ok;
+
     private static void compute(Sequence sequence, int bbpNo, int i1, Hairpin hp){
         li++;
         int x1, x2;
@@ -39,8 +40,6 @@ public class Hairpin extends CSE{
             ok = false;
         }
     }
-
-
 
     public static void main(String[] args){
         li = 0;
