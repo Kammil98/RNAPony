@@ -7,11 +7,6 @@ import java.util.logging.Level;
 
 public class Hairpin extends CSE{
 
-    static{
-        li = 0;
-        ok = false;
-    }
-
     private static int li;
     private static int step;
     private static boolean ok;
@@ -48,6 +43,8 @@ public class Hairpin extends CSE{
 
 
     public static void main(String[] args){
+        li = 0;
+        ok = false;
         Hairpin hp = new Hairpin();
         int step_origin, nins;
 

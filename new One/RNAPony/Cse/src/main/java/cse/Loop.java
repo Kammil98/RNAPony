@@ -8,10 +8,6 @@ import java.util.logging.Level;
 
 public class Loop extends CSE{
 
-    static {
-        li = 0;
-    }
-
     private static int li;
     private static int start, limit;
     private final boolean openLoop;
@@ -99,6 +95,7 @@ public class Loop extends CSE{
     }
 
     public static void main(String[] args){
+        li = 0;
         Loop loop;
         int nins;
         int i1, i2;

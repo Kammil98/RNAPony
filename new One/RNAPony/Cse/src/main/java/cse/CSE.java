@@ -41,8 +41,11 @@ public class CSE {
      * @param filePath path to file, to write logs in
      */
     public static void changeLogFile(Path filePath){
-        for(Handler handler : logger.getHandlers())//remove old handlers
+        for(Handler handler : logger.getHandlers()){//remove old handlers
+            handler.close();
             logger.removeHandler(handler);
+        }
+
         Handler handler = null;
         if(isSaveToFile()){
             try {
