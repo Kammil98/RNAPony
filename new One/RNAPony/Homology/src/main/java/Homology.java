@@ -48,6 +48,7 @@ public class Homology {
 
     public void bpSet(StringBuilder seq, StringBuilder dot){
         int l = dot.length();
+        //TODO
     }
 
     public void homology(Path fileName){
@@ -66,9 +67,7 @@ public class Homology {
             for(;(line = reader.readLine()) != null;){
 
                 tokenizer = new StringTokenizer(line, " ");
-                if(tokenizer.countTokens() == 7){
-                    pdb = tokenizer.nextToken();
-                }
+                //TODO
             }
         } catch (IOException e) {
             e.printStackTrace();
