@@ -1,8 +1,7 @@
 module Cse {
     requires Tokenizer;
     requires java.logging;
-    //requires lombok;
-    //requires transitive lombok;
+    requires static lombok;
     opens cse;
     exports cse;
     exports models;
