@@ -114,7 +114,7 @@ public abstract class CSE {
      * @param source String with tokens divided by Separators
      * @return ArrayList of All elements from source
      */
-    public ArrayList<String> createArray(String source){
+    public static ArrayList<String> createArray(String source){
         return StringTokenizer.getStreamOfTokens(source, SEPARATORS)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -124,7 +124,7 @@ public abstract class CSE {
      * @param source String with integer tokens divided by Separators
      * @return ArrayList of All elements from source
      */
-    public ArrayList<Integer> createArrayInt(String source){
+    public static ArrayList<Integer> createArrayInt(String source){
         return StringTokenizer.getStreamOfTokens(source, SEPARATORS)
                 .map(Integer::valueOf).collect(Collectors.toCollection(ArrayList::new));
     }

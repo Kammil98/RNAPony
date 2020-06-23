@@ -1,4 +1,0 @@
---patch-module
-Tokenizer=_
---add-reads
-Tokenizer=ALL-UNNAMED

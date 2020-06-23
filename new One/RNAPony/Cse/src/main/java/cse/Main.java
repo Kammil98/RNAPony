@@ -7,9 +7,10 @@ public class Main {
         hairpin.findSequences();
         Loop loop = new Loop("bulge.dot", "cse.txt", 0, false);
         loop.findSequences();*/
-        Loop loop = new Loop("ur15_spinka.dot", "cse.txt", 0, false);
+        //Loop loop = new Loop("ur15_spinka.dot", "cse.txt", 0, false);
         //loop.setSaveToFile(true);
         //loop.changeLogFile(Path.of("plik.txt"));
-        loop.findSequences();
+        //loop.findSequences();
+
     }
 }

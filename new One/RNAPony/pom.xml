@@ -18,7 +18,7 @@
     <modules>
         <module>Tokenizer</module>
         <module>Cse</module>
-        <module>Homology</module>
+        <module>homology.Homology</module>
     </modules>
 
     <dependencies>
