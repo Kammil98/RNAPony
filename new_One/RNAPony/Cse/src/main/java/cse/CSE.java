@@ -3,6 +3,7 @@ package cse;
 import maintokenizers.StringTokenizer;
 import csemodels.Pair;
 import models.Sequence;
+import utils.Utils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -18,7 +19,6 @@ public abstract class CSE {
     private String dBFileName;
     private int insertion;
     public final Logger logger;
-    private boolean saveToFile = false;
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
     public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
@@ -28,31 +28,6 @@ public abstract class CSE {
     private ArrayList<String> tops;
     private ArrayList<Integer> bbps;
     private final Sequence sourceSequence;
-
-    /**
-     * Change file, where logs will be saving
-     * @param filePath path to file, to write logs in
-     */
-    public void changeLogHandler(Path filePath){
-        for(Handler handler : logger.getHandlers()){//remove old handlers
-            handler.close();
-            logger.removeHandler(handler);
-        }
-
-        Handler handler = null;
-        if(isSaveToFile()){
-            try {
-                handler = new FileHandler(filePath.toString(), false);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-        }
-        else
-            handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        logger.addHandler(handler);
-    }
 
     /**
      * Initialize CSE and read database
@@ -65,7 +40,7 @@ public abstract class CSE {
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%5$s%n");
         logger.setUseParentHandlers(false);
-        changeLogHandler(Path.of("./", "default.txt"));
+        Utils.changeLogHandler(logger);
 
         this.setSequenceFileName(sequenceFileName);
         this.setdBFileName(dBFileName);
@@ -92,18 +67,8 @@ public abstract class CSE {
      * @param dbFile name of file with sequences from database
      */
     public void initData(String MPseqFile, String dbFile){
-        Path startPath;
-        if(Files.exists(Path.of("./","files"))){//Release Path
-            startPath = Path.of("./", "files");
-        }
-        else{//Test Path
-            startPath = Path.of("../", "files");
-        }
-        Path filesPath = Path.of(startPath.toString()),
-                MpSeqFP = Path.of(filesPath.toString(), MPseqFile),
-                dBFP = Path.of(filesPath.toString(), dbFile);
-        readMpSeq(MpSeqFP.toString());
-        readDataBase(dBFP.toString());
+        readMpSeq(MPseqFile);
+        readDataBase(dbFile);
         setSeqs(createArray(sourceSequence.getSeq()));
         setTops(createArray(sourceSequence.getTop()));
         setBbps(createArrayInt(""));
@@ -136,9 +101,8 @@ public abstract class CSE {
     public void readMpSeq(String fileName){
         try(BufferedReader reader =
                     new BufferedReader(
-                    new InputStreamReader(
-                    new FileInputStream(fileName)
-                    ))){
+                    new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
+                    )){
             String line;
             for(int lineNo = 1; (line = reader.readLine()) != null; lineNo++){
                 switch(lineNo){
@@ -165,9 +129,8 @@ public abstract class CSE {
     public void readDataBase(String fileName){
         try(BufferedReader reader =
                     new BufferedReader(
-                            new InputStreamReader(
-                                    new FileInputStream(fileName)
-                            ))){
+                            new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
+                            )){
             String line;
             String pdb, chain, seq, top, bp;
             double resol;
@@ -195,6 +158,7 @@ public abstract class CSE {
     /**
      * Display sequences from database
      */
+    @SuppressWarnings("unused")
     public void showDataBase(){
         Iterator<Sequence> seqsIter = getSequences().iterator();
         int counter = 0;
@@ -247,6 +211,7 @@ public abstract class CSE {
      * @param vbp_order list of orders
      * @param newSequence new sequence
      */
+    @SuppressWarnings("unused")
     private void createPatternShift(Sequence sequence, ArrayList<Integer> vlength_seq, ArrayList<Integer> vbp1_pos,
             ArrayList<Integer> vbp2_pos, ArrayList<Integer> vbp_order, Sequence newSequence){
         char c1, c2;
@@ -278,14 +243,6 @@ public abstract class CSE {
             }
             concatTopAndSeq(newSequence, sequence, tmp, 0, vlength_seq.get(0));
         }
-    }
-
-    public boolean isSaveToFile() {
-        return saveToFile;
-    }
-
-    public void setSaveToFile(boolean saveToFile) {
-        this.saveToFile = saveToFile;
     }
 
     public ArrayList<Sequence> getSequences() {

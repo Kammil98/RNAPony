@@ -14,11 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class CSETest {
 
     private CSE cse;
-    private static Path filesPath;
-    @BeforeAll
-    public static void setup(){
-        filesPath = Path.of("./", "..", "files");
-    }
 
     @BeforeEach
     public void init(){
@@ -29,11 +24,10 @@ class CSETest {
     void readMpSeq() {
         Sequence expectedSeq = new Sequence();
         String msg = "Inapropriate reading hairpion.dot file";
-        Path hairpinFile = Path.of(filesPath.toString(), "hairpin.dot");
         expectedSeq.setName("hairpin");
         expectedSeq.setSeq("CAGCGUCAAGCCCCGGCUUGCUG");
         expectedSeq.setTop("((((....((.[[[[[)).))))");
-        cse.readMpSeq(hairpinFile.toString());
+        cse.readMpSeq("hairpin.dot");
         assertEquals(expectedSeq.getName(), cse.getSourceSequence().getName(), msg);
         assertEquals(expectedSeq.getSeq(), cse.getSourceSequence().getSeq(), msg);
         assertEquals(expectedSeq.getTop(), cse.getSourceSequence().getTop(), msg);
@@ -42,7 +36,6 @@ class CSETest {
     @Test
     void readDataBase() {
         Sequence expectedSeq0, expectedSeq4;
-        Path cseFile = Path.of(filesPath.toString(), "cse.txt");
         String msg;
         expectedSeq0 = new Sequence("157d", "A_B", 2.38d, "CGCGAAUUAGCG;CGCGAAUUAGCG;",
                 "(((.((((.(((.))).)))).))).", "24;22;20;0;16;14;12;10;0;6;4;2;0;-2;-4;-6;0;-10;-12;" +
@@ -50,7 +43,7 @@ class CSETest {
         expectedSeq4 = new Sequence("1a3m", "A_B", 999.99d, "GGCGUCACACCUUC;GGGUGAAGUCGCC;",
                 "((((.(.((((.....))))..).)))).", "27;25;23;21;0;17;0;12;10;8;6;0;0;0;0;0;-6;-8;-10;-12;0;0;" +
                 "-17;0;-21;-23;-25;-27;0",0);
-        cse.readDataBase(cseFile.toString());
+        cse.readDataBase("cse.txt");
         msg = "Inapropriate reading first sequence from cse.txt file";
         assertEquals(expectedSeq0.toString(), cse.getSequences().get(0).toString(), msg);
         msg = "Inapropriate reading nth sequence from cse.txt file";

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 
 
-class LoopTest extends FileChecker{
+class LoopTest extends CseFileChecker {
     private Loop loop;
 
     @Test

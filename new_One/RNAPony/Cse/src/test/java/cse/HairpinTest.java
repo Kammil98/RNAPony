@@ -2,7 +2,7 @@ package cse;
 
 import org.junit.jupiter.api.Test;
 
-class HairpinTest extends FileChecker{
+class HairpinTest extends CseFileChecker {
     //private static Path resultsFilesPath = Path.of("../", "files", "results");
     @Test
     void hairpin() {
