@@ -5,10 +5,11 @@ import homology.Homology;
 
 public class Main {
     public static void main(String[] args){
-        Hairpin hairpin = new Hairpin("hairpin.dot", "cse.txt", 0);
-        hairpin.findSequences();
-        Loop loop = new Loop("ur4_L1.dot", "cse.txt", 0, false);
-        loop.findSequences();
+        Hairpin hairpin = new Hairpin("cse.txt", 0);
+        hairpin.compute("hairpin.dot");
+        Loop loop = new Loop("cse.txt", 0, false);
+        loop.compute("ur4_L1.dot");
+        loop.compute("ur4_L2.dot");
         //Loop loop = new Loop("ur15_spinka.dot", "cse.txt", 0, false);
         //loop.setSaveToFile(true);
         //loop.changeLogFile(Path.of("plik.txt"));

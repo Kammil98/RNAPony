@@ -11,18 +11,17 @@ public class Loop extends CSE{
 
     private static int li;
     private static int start, limit;
-    private final boolean openLoop;
+    private boolean openLoop;
 
     /**
      * Initialize Loop and read database
-     * @param sequenceFileName name of file with searching sequence
      * @param dBFileName name of file with database
      * @param insertion number of insertions
      * @param openLoop true, if it is openLoop, false otherwise
      */
-    public Loop(String sequenceFileName, String dBFileName, int insertion, boolean openLoop) {
-        super(sequenceFileName, dBFileName, insertion);
-        this.openLoop = openLoop;
+    public Loop(String dBFileName, int insertion, boolean openLoop) {
+        super(dBFileName, insertion);
+        this.setOpenLoop(openLoop);
     }
 
     /**
@@ -94,8 +93,8 @@ public class Loop extends CSE{
             start = -firstStep;
     }
 
-    private void compute(Sequence sequence, int i, int i1,
-                               ArrayList<Integer> steps, ArrayList<Pair> pairs){
+    private void subCompute(Sequence sequence, int i, int i1,
+                            ArrayList<Integer> steps, ArrayList<Pair> pairs){
         boolean breaked = false;
         int x1, x2;
         int stepNo = 0;
@@ -123,8 +122,9 @@ public class Loop extends CSE{
 
     /**
      * Find sequences from database, which matches
+     * @param MPseqFileName name of file with base Sequence
      */
-    public void findSequences(){
+    public void compute(String MPseqFileName){
         li = 0;
         int nins;
         int i1, i2;
@@ -132,7 +132,7 @@ public class Loop extends CSE{
         ArrayList<Boolean> direct = new ArrayList<>();
         ArrayList<Integer> steps_origin = new ArrayList<>(),
                 steps = new ArrayList<>();
-
+        initData(MPseqFileName);
         nins = getInsertion();
         prepareArrays(steps, steps_origin, direct);
         logger.info(String.format("%s %s %s", getSourceSequence().getName(),
@@ -150,7 +150,7 @@ public class Loop extends CSE{
             for(Sequence sequence: getSequences()){
                 computeStartAndLimit(sequence, steps.get(0));
                 for(int i = start; i < limit; i++)
-                    compute(sequence, i, i1, steps, pairs);
+                    subCompute(sequence, i, i1, steps, pairs);
             }
             steps.set(i2, steps_origin.get(i2));
         }
@@ -158,5 +158,9 @@ public class Loop extends CSE{
 
     public boolean isOpenLoop() {
         return openLoop;
+    }
+
+    public void setOpenLoop(boolean openLoop) {
+        this.openLoop = openLoop;
     }
 }

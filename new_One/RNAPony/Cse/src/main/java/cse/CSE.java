@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 import java.util.logging.*;
 
 public abstract class CSE {
-    private String sequenceFileName;
     private String dBFileName;
     private int insertion;
     public final Logger logger;
@@ -24,22 +23,20 @@ public abstract class CSE {
     private ArrayList<String> seqs;
     private ArrayList<String> tops;
     private ArrayList<Integer> bbps;
-    private final Sequence sourceSequence;
+    private Sequence sourceSequence;
 
     /**
      * Initialize CSE and read database
-     * @param sequenceFileName name of file with searching sequence
      * @param dBFileName name of file with database
      * @param insertion number of insertions
      */
-    public CSE(String sequenceFileName, String dBFileName, int insertion){
+    public CSE(String dBFileName, int insertion){
         logger = Logger.getLogger(cse.CSE.class.getName());
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%5$s%n");
         logger.setUseParentHandlers(false);
         Utils.changeLogHandler(logger);
 
-        this.setSequenceFileName(sequenceFileName);
         this.setdBFileName(dBFileName);
         this.setInsertion(insertion);
         sequences = new ArrayList<>();
@@ -47,25 +44,26 @@ public abstract class CSE {
         tops = new ArrayList<>();
         bbps = new ArrayList<>();
         sourceSequence = new Sequence();
-
-        initData(sequenceFileName, dBFileName);
+        readDataBase(dBFileName);
+        //initData(sequenceFileName, dBFileName);
     }
 
     /**
      * Main function, which calculate
      * and display sequences
+     * @param MPseqFileName name of file with base Sequence
      */
-    public abstract void findSequences();
+    public abstract void compute(String MPseqFileName);
 
     /**
      * Read necessary data from files.
      * All files should be placed in "files" folder
-     * @param MPseqFile name of file with one sequence
-     * @param dbFile name of file with sequences from database
+     * @param MPseqFileName name of file with one sequence
      */
-    public void initData(String MPseqFile, String dbFile){
-        readMpSeq(MPseqFile);
-        readDataBase(dbFile);
+    public void initData(String MPseqFileName){
+        sourceSequence = new Sequence();
+        readMpSeq(MPseqFileName);
+        //readDataBase(dbFileName);
         setSeqs(Utils.createArray(sourceSequence.getSeq(), SEPARATORS));
         setTops(Utils.createArray(sourceSequence.getTop(), SEPARATORS));
         setBbps(Utils.createArrayInt("", SEPARATORS));
@@ -252,14 +250,6 @@ public abstract class CSE {
 
     public void setBbps(ArrayList<Integer> bbps) {
         this.bbps = bbps;
-    }
-
-    public String getSequenceFileName() {
-        return sequenceFileName;
-    }
-
-    public void setSequenceFileName(String sequenceFileName) {
-        this.sequenceFileName = sequenceFileName;
     }
 
     public int getInsertion() {

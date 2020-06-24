@@ -14,12 +14,11 @@ public class Hairpin extends CSE{
 
     /**
      * Initialize Hairpin and read database
-     * @param sequenceFileName name of file with searching sequence
      * @param dBFileName name of file with database
      * @param insertion number of insertions
      */
-    public Hairpin(String sequenceFileName, String dBFileName, int insertion) {
-        super(sequenceFileName, dBFileName, insertion);
+    public Hairpin(String dBFileName, int insertion) {
+        super(dBFileName, insertion);
     }
 
     /**
@@ -28,7 +27,7 @@ public class Hairpin extends CSE{
      * @param bbpNo counter from outer function
      * @param i1 counter from outer function
      */
-    private void compute(Sequence sequence, int bbpNo, int i1){
+    private void subCompute(Sequence sequence, int bbpNo, int i1){
         li++;
         int x1, x2;
         StringBuilder msg = new StringBuilder();
@@ -60,12 +59,13 @@ public class Hairpin extends CSE{
 
     /**
      * Find sequences from database, which matches
+     * @param MPseqFileName name of file with base Sequence
      */
-    public void findSequences(){
+    public void compute(String MPseqFileName){
         li = 0;
         ok = false;
         int step_origin, nins;
-
+        initData(MPseqFileName);
         nins = getInsertion();
         step_origin = getSourceSequence().getSeq().length() - 1;
         logger.info(String.format("%s %s %s", getSourceSequence().getName(),
@@ -79,7 +79,7 @@ public class Hairpin extends CSE{
                 for(int bbp: getBbps()){
                     bbpNo++;
                     if(bbp == step)
-                        compute(sequence, bbpNo, i1);
+                        subCompute(sequence, bbpNo, i1);
                 }
             }
         }

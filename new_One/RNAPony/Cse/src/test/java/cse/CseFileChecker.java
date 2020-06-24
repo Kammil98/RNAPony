@@ -18,9 +18,7 @@ public class CseFileChecker extends FileChecker {
      * @param javaFileName name of file with result of java program
      * @param cse CSE object to find Sequences
      */
-    protected void checkFile(String cppFileName, String javaFileName, CSE cse){
-        System.out.println(Path.of(".").toAbsolutePath());
-
+    protected void checkFile( String sourceFile, String cppFileName, String javaFileName, CSE cse){
         Path cppFilePath = Path.of("results", "c++", cppFileName);
         Path javaFilePath = Path.of("results", "java", javaFileName);
         ClassLoader classLoader = cse.getClass().getClassLoader();
@@ -34,8 +32,8 @@ public class CseFileChecker extends FileChecker {
             e.printStackTrace();
         }
         Utils.changeLogHandler(cse.logger, javaFilePath);
-        cse.findSequences();
+        cse.compute(sourceFile);
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
-        //new File(javaFilePath.toString()).deleteOnExit();
+        new File(javaFilePath.toString()).deleteOnExit();
     }
 }
