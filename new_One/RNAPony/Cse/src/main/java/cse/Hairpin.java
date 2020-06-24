@@ -1,6 +1,7 @@
 package cse;
 
 import models.Sequence;
+import utils.Utils;
 
 import java.util.logging.Level;
 
@@ -73,7 +74,7 @@ public class Hairpin extends CSE{
             logger.log(Level.INFO, "INSERT= " + i1);
             step = step_origin + i1;
             for(Sequence sequence: getSequences()){
-                setBbps(createArrayInt(sequence.getBp()));
+                setBbps(Utils.createArrayInt(sequence.getBp(), SEPARATORS));
                 int bbpNo = -1;
                 for(int bbp: getBbps()){
                     bbpNo++;

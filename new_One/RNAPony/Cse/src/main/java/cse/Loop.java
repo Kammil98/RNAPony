@@ -2,6 +2,7 @@ package cse;
 
 import csemodels.Pair;
 import models.Sequence;
+import utils.Utils;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -81,7 +82,7 @@ public class Loop extends CSE{
      * @param firstStep first step
      */
     private void computeStartAndLimit(Sequence sequence, int firstStep){
-        setBbps( createArrayInt(sequence.getBp()));
+        setBbps(Utils.createArrayInt(sequence.getBp(), SEPARATORS));
         limit = getBbps().size();
         for(int i = 0; i < 20; i++)
             getBbps().add(0);

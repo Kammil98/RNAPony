@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.logging.*;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -54,15 +55,7 @@ public class Utils {
         return Utils.getStreamOfTokens(source, separators)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
-    /*public static void main(String[] args){
-        Utils util = new Utils();
-        System.out.println(Path.of(".").toAbsolutePath());
-        ClassLoader classLoader = homo.getClass().getClassLoader();
-        for(Package p: classLoader.getDefinedPackages())
-        homo.info();
-        homo.compute(Path.of(classLoader.getResource("ur4_L1_0.txt").getPath()));
-        //homo.compute(Path.of(".", "files", "ur4_L1_0.txt"));
-    }*/
+
     /**
      * Find group of tokens and save it to ArrayList of Integers
      * @param source String with integer tokens divided by Separators
@@ -83,6 +76,6 @@ public class Utils {
     public static Stream<String> getStreamOfTokens(String text, String delims){
         Pattern delimsPattern = Pattern.compile("[^" + delims + "]+");
         Matcher tokenMatcher = delimsPattern.matcher(text);
-        return tokenMatcher.results().map(matchResult -> matchResult.group());
+        return tokenMatcher.results().map(MatchResult::group);
     }
 }

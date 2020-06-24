@@ -6,13 +6,10 @@ import models.Sequence;
 import utils.Utils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.logging.*;
-import java.util.stream.Collectors;
 
 public abstract class CSE {
     private String sequenceFileName;
@@ -69,29 +66,9 @@ public abstract class CSE {
     public void initData(String MPseqFile, String dbFile){
         readMpSeq(MPseqFile);
         readDataBase(dbFile);
-        setSeqs(createArray(sourceSequence.getSeq()));
-        setTops(createArray(sourceSequence.getTop()));
-        setBbps(createArrayInt(""));
-    }
-
-    /**
-     * Find group of tokens and save it to ArrayList of Strings
-     * @param source String with tokens divided by Separators
-     * @return ArrayList of All elements from source
-     */
-    public static ArrayList<String> createArray(String source){
-        return StringTokenizer.getStreamOfTokens(source, SEPARATORS)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    /**
-     * Find group of tokens and save it to ArrayList of Integers
-     * @param source String with integer tokens divided by Separators
-     * @return ArrayList of All elements from source
-     */
-    public static ArrayList<Integer> createArrayInt(String source){
-        return StringTokenizer.getStreamOfTokens(source, SEPARATORS)
-                .map(Integer::valueOf).collect(Collectors.toCollection(ArrayList::new));
+        setSeqs(Utils.createArray(sourceSequence.getSeq(), SEPARATORS));
+        setTops(Utils.createArray(sourceSequence.getTop(), SEPARATORS));
+        setBbps(Utils.createArrayInt("", SEPARATORS));
     }
 
     /**

@@ -7,14 +7,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CseFileChecker extends FileChecker {
-
-    private final Logger logger = Logger.getLogger(CseFileChecker.class.getName());
 
     /**
      * Preparing CSE params to test if two files are equal and test it
