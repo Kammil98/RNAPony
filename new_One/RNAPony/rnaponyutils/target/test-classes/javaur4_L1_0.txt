@@ -1,0 +1,25 @@
+ur4_L1 CUAG;CCG;CCAG;UC;GAAAG (..(;).(;)..(;)(;)...) 
+INSERT= 0
+NR     1 ins 0 2bte B 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     2 ins 0 2bte E 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     3 ins 0 2byt B 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     4 ins 0 2byt E 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     5 ins 0 2v0g B 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     6 ins 0 2v0g F 3.9 25 - 28 GCGC ))(( 44 - 46 GUG ))( 53 - 56 CGUG )..( 72 - 73 CC )) 7 - 11 GUGGC (..((
+NR     7 ins 0 3zju B 2.45 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR     8 ins 0 3zjv B 2.4 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR     9 ins 0 4arc B 2.6 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    10 ins 0 4ari B 2.5 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    11 ins 0 4as1 B 2.36 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    12 ins 0 4cqn B 2.2 25 - 28 ACAA )).( 41 - 43 UCG ).( 52 - 55 UGUG )..( 71 - 72 CU )) 7 - 11 AUGGU (..((
+NR    13 ins 0 4cqn E 2.2 25 - 28 ACAA )).( 41 - 43 UCG ).( 52 - 55 UGUG )..( 71 - 72 CU )) 7 - 11 AUGGU (..((
+NR    14 ins 0 4v87 BA_BB_BC_BD_B1 3.31 1532 - 1535 ACGC )).( 1551 - 1553 GUG ).( 1564 - 1567 CUUA )..( 1583 - 1584 UC )) 1514 - 1518 GUGGU (..((
+NR    15 ins 0 4v8b AA_AB_AC_A1 3.28 1532 - 1535 ACGC )).( 1551 - 1553 GUG ).( 1564 - 1567 CUUA )..( 1583 - 1584 UC )) 1514 - 1518 GUGGU (..((
+NR    16 ins 0 4v8c CA_CB_CC_C1 3.25 1532 - 1535 ACGC )).( 1551 - 1553 GUG ).( 1564 - 1567 CUUA )..( 1583 - 1584 UC )) 1514 - 1518 GUGGU (..((
+NR    17 ins 0 4v8c DA_DB_DC_DD_D1 3.25 1532 - 1535 ACGC )).( 1551 - 1553 GUG ).( 1564 - 1567 CUUA )..( 1583 - 1584 UC )) 1514 - 1518 GUGGU (..((
+NR    18 ins 0 4wu1 13_2K_3K_4K_1H 3.25 1548 - 1551 GGAG )).( 1567 - 1569 CCG ).( 1578 - 1581 UUCG )..( 1597 - 1598 CC )) 1530 - 1534 GuUCC (..((
+NR    19 ins 0 5kcr 1A_1a_1v_1x 999.99 4480 - 4483 ACGC )..( 4499 - 4501 GUG ).( 4512 - 4515 CUUA )..( 4531 - 4532 UC )) 4462 - 4466 GUGGU (...(
+NR    20 ins 0 5omw B 2.36 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    21 ins 0 5on2 B 2.48 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    22 ins 0 5onh B 2.44 25 - 28 ACAA )).( 44 - 46 UCG ).( 57 - 60 UGUG )..( 76 - 77 CU )) 7 - 11 AUGGU (..((
+NR    23 ins 0 6ha1 x 999.99 25 - 28 ACGC )).( 44 - 46 GUG ).( 57 - 60 CUUA )..( 76 - 77 UC )) 7 - 11 GUGGU (..((

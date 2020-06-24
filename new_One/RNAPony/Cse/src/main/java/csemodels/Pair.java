@@ -14,8 +14,6 @@ public class Pair {
         this.second = second;
     }
 
-    public Pair(){}
-
     public boolean isPointBetweenInclusive(int x){return first <= x & x <= second;}
 
     public boolean isInsideGivenPair(Pair p2){return p2.getFirst() < first & second < p2.getSecond();}

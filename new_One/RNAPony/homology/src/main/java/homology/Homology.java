@@ -41,7 +41,7 @@ public class Homology {
         Utils.changeLogHandler(logger);
     }
 
-    public class HomologyResult{
+    public static class HomologyResult{
         public HomologyResult(int homeSeq, int homeBp){
             this.homeSeq = homeSeq;
             this.homeBp = homeBp;
@@ -116,7 +116,7 @@ public class Homology {
      * initialize lbp0, w01 and w02 values.
      * Log some basic information about basic sequence
      * @param reader reader to file with sequences
-     * @throws IOException
+     * @throws IOException  If an I/O error occurs
      */
     private void initTargetSequence(BufferedReader reader) throws IOException {
         ArrayList <String> tokens;

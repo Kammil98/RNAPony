@@ -5,7 +5,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class StringTokenizer {
     private String text;
@@ -16,18 +15,6 @@ public class StringTokenizer {
     //strToNum function is replaced by Wrapper.parsePrimitive(str)
     //for example Integer.parseInt(str)
 
-
-    /**
-     * Extract tokens from String and return it as a stream
-     * @param text text with tokens to extract
-     * @param delims possible delimiters in text with tokens
-     * @return Stream of tokens in String Objects
-     */
-    public static Stream<String> getStreamOfTokens(String text, String delims){
-        Pattern delimsPattern = Pattern.compile("[^" + delims + "]+");
-        Matcher tokenMatcher = delimsPattern.matcher(text);
-        return tokenMatcher.results().map(matchResult -> matchResult.group());
-    }
 
     /**
      * Initialize StringTokenizer class, to extract Tokens

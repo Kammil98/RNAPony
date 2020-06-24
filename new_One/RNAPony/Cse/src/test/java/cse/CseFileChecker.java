@@ -7,7 +7,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,6 +36,6 @@ public class CseFileChecker extends FileChecker {
         Utils.changeLogHandler(cse.logger, javaFilePath);
         cse.findSequences();
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
-        new File(javaFilePath.toString()).deleteOnExit();
+        //new File(javaFilePath.toString()).deleteOnExit();
     }
 }
