@@ -151,10 +151,8 @@ public class Homology {
     }
 
     public static void main(String[] args){
-        Homology homo = new Homology();
-        //ClassLoader classLoader = homo.getClass().getClassLoader();
-        //homo.logger.info(classLoader.getResource("ur4_L1_0.txt").getFile());
-        homo.compute("ur4_L1_0.txt");
+        Homology homology = new Homology();
+        homology.compute("ur4_L1_0.txt");
     }
 
     public boolean isSaveToFile() {

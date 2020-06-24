@@ -25,10 +25,8 @@ public class Utils {
         Handler handler = null;
         if(filePath != null){
             try {
-                System.out.println("Tworzę: " + filePath.toString());
                 handler = new FileHandler(filePath.toString(), false);
             } catch (IOException e) {
-                System.out.println("tutaj2");
                 e.printStackTrace();
                 System.exit(-1);
             }
