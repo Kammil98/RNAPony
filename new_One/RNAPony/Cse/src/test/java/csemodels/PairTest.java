@@ -1,5 +1,6 @@
-package models;
+package csemodels;
 
+import csemodels.Pair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

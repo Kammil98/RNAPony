@@ -1,2 +1,4 @@
+models\Sequence.class
+utils\FileChecker.class
 module-info.class
 utils\Utils.class

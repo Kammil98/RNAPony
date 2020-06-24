@@ -1,7 +1,7 @@
 package cse;
 
 import maintokenizers.StringTokenizer;
-import models.Pair;
+import csemodels.Pair;
 import models.Sequence;
 
 import java.io.*;

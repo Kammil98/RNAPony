@@ -1,6 +1,6 @@
 package cse;
 
-import models.Pair;
+import csemodels.Pair;
 import models.Sequence;
 
 import java.util.ArrayList;

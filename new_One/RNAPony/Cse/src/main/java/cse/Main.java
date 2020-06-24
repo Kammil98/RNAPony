@@ -1,6 +1,8 @@
 package cse;
 
 
+import homology.Homology;
+
 public class Main {
     public static void main(String[] args){
         /*Hairpin hairpin = new Hairpin("hairpin.dot", "cse.txt", 0);
@@ -11,6 +13,7 @@ public class Main {
         //loop.setSaveToFile(true);
         //loop.changeLogFile(Path.of("plik.txt"));
         //loop.findSequences();
-
+        Homology homology = new Homology();
+        homology.compute("ur4_L1_0.txt");
     }
 }

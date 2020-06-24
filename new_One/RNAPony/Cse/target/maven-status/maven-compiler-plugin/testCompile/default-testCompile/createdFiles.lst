@@ -1,5 +1,5 @@
 cse\CSETest.class
 cse\HairpinTest.class
-models\PairTest.class
+csemodels\PairTest.class
 cse\LoopTest.class
 cse\FileChecker.class

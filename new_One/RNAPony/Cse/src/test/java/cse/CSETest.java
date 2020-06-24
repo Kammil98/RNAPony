@@ -1,6 +1,6 @@
 package cse;
 
-import models.Pair;
+import csemodels.Pair;
 import models.Sequence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

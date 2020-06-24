@@ -1,2 +1,3 @@
-module-info.class
 homology\Homology.class
+homology\Homology$HomologyResult.class
+module-info.class

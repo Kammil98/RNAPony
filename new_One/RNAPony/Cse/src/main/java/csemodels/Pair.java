@@ -1,4 +1,4 @@
-package models;
+package csemodels;
 
 import lombok.Getter;
 import lombok.Setter;
