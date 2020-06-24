@@ -51,11 +51,13 @@ public class Homology {
         lbp = 0;
         char d1, d2, sp = 0;
         int index, h, j;
+        //logger.info(sequence.getSeq() + "\n" + sequence.getTop());
         for(int i = 1; i <= seqLength; i++){
             d1 = sequence.getTop().charAt(i - 1);
             index = BRACKET1.indexOf(d1) + 1;
             if(index != 0){//if char was found
                 d2 = BRACKET2.charAt(index - 1);
+                //logger.info("d1 = " + d1 + " d2 = " + d2 + " index = " + index);
                 h = 1;
                 j = i + 1;
                 while ((h > 0) & j <= seqLength){
@@ -68,8 +70,17 @@ public class Homology {
                 }
                 if(sp == d2){
                     lbp++;
-                    w1.add(i);
-                    w2.add(j -1);
+                    if(w1.size() <= lbp){
+                        w1.add(i);
+                        w2.add(j - 1);
+                    }
+                    else{
+                        w1.set(lbp, i);
+                        w2.set(lbp, j - 1);
+                    }
+                    /*logger.info(String.format("i=%d j=%d h=%d",i,j,h));
+                    logger.info(String.format("LBP=%d %s%d %s%d", lbp, sequence.getSeq().charAt(w1.get(lbp) - 1),
+                            w1.get(lbp), sequence.getSeq().charAt(w2.get(lbp) - 1), w2.get(lbp)));*/
                 }
             }
         }
@@ -130,6 +141,7 @@ public class Homology {
                     sequence.setSeq(sequence.getSeq() + ";" + tokens.get(i));
                     sequence.setTop(sequence.getTop() + ";" + tokens.get(i + 1));
                 }
+
                 homology(sequence);
                 logger.info(String.format("%s %8.3f %3d", line, (float)(homeSeq * 100) / sequence.getSeq().length(), homeBp));
             }

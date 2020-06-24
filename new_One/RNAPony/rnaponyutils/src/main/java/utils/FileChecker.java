@@ -21,11 +21,14 @@ public class FileChecker {
             for(String line1 = CppReader.readLine(), line2  = javaReader2.readLine(); line1 != null & line2 != null;
                 line1 = CppReader.readLine(), line2  = javaReader2.readLine()){
                 //need to do .replaceAll("\\.0 "," "), because in java 5 is saved as "5.0" and in c++ as "5"
+                String correctedLine2 = line2.replaceAll("\\.0 "," ")
+                        .replaceAll("\\s+","")
+                        .replaceAll(",", ".");
                 if(!line1.replaceAll("\\s+","")
-                        .equals(line2.replaceAll("\\.0 "," ").replaceAll("\\s+",""))){
+                        .equals(correctedLine2)){
                     logger.log(Level.SEVERE, "Following lines are not equal:\n\t" + line1 + "\t" + line1.length() + "letters\n\t" + line2 + "\t" + line2.length() + "letters");
                     logger.log(Level.SEVERE, "After replacing:\n\t" + line1.replaceAll("\\s+","") + "\n\t" +
-                            line2.replaceAll("\\.0 "," ").replaceAll("\\s+",""));
+                            correctedLine2);
                     return false;
                 }
             }
