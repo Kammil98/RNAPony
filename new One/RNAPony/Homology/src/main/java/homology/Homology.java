@@ -5,67 +5,49 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-
-import cse.CSE;
 import models.Sequence;
-
+import utils.Utils;
 import java.util.ArrayList;
 import java.util.logging.*;
 
 public class Homology {
+
     public final Logger logger;
-    private static final String BRACKET1, BRACKET2;
+    private static final String SEPARATORS, BRACKET1, BRACKET2;
     private boolean saveToFile = false;
     private final Sequence sequence0;
     private int lbp0, lbp;
-    private int seqLength;
     private int homeSeq, homeBp;
-    private int[] w01;
-    private int[] w02;
-    private int[] w1;
-    private int[] w2;
+    private ArrayList<Integer> w01;
+    private ArrayList<Integer> w02;
+    private ArrayList<Integer> w1;
+    private ArrayList<Integer> w2;
 
     static {
+        SEPARATORS = " \t\f";
         BRACKET1="([{<ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         BRACKET2=")]}>abcdefghijklmnopqrstuvwxyz";
     }
 
     public Homology(){
         sequence0 = new Sequence();
+        w01 = new ArrayList<>();
+        w02 = new ArrayList<>();
+        w1 = new ArrayList<>();
+        w2 = new ArrayList<>();
+        w01.add(-1);//because we count from 1 as in AWK
+        w02.add(-1);
+        w1.add(-1);
+        w2.add(-1);
         logger = Logger.getLogger(Homology.class.getName());
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%5$s%n");
         logger.setUseParentHandlers(false);
-        changeLogFile(Path.of("./", "default.txt"));
-    }
-
-    /**
-     * Change file, where logs will be saving
-     * @param filePath path to file, to write logs in
-     */
-    public void changeLogFile(Path filePath){
-        for(Handler handler : logger.getHandlers()){//remove old handlers
-            handler.close();
-            logger.removeHandler(handler);
-        }
-
-        Handler handler = null;
-        if(isSaveToFile()){
-            try {
-                handler = new FileHandler(filePath.toString(), false);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(-1);
-            }
-        }
-        else
-            handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        logger.addHandler(handler);
+        Utils.changeLogHandler(logger);
     }
 
     public void bpSet(Sequence sequence){
-        seqLength = sequence.getTop().length();
+        int seqLength = sequence.getTop().length();
         lbp = 0;
         char d1, d2, sp = 0;
         int index, h, j;
@@ -86,15 +68,15 @@ public class Homology {
                 }
                 if(sp == d2){
                     lbp++;
-                    w1[lbp] = i;
-                    w2[lbp] = j - 1;
+                    w1.add(i);
+                    w2.add(j -1);
                 }
             }
         }
     }
 
     public void homology(Sequence sequence){
-        seqLength = sequence.getSeq().length();
+        int seqLength = sequence.getSeq().length();
         homeSeq = homeBp = 0;
         for(int i = 1; i <= seqLength; i++) {
             if (sequence.getSeq().charAt(i - 1) == sequence0.getSeq().charAt(i - 1))
@@ -103,7 +85,7 @@ public class Homology {
         bpSet(sequence);
         for(int i = 1; i <= lbp; i++){
             for(int i0 = 1; i0 <= lbp0; i0++){
-                if(w01[i0] == w1[i] & w02[i0] == w2[i])
+                if(w01.get(i0) == w1.get(i) & w02.get(i0) == w2.get(i))
                     homeBp++;
             }
         }
@@ -113,37 +95,32 @@ public class Homology {
      * compute homology for all sequences in file
      * @param fileName path to file with sequences
      */
-    public void compute(Path fileName){
+    public void compute(String fileName){
 
         try(BufferedReader reader =
                     new BufferedReader(
-                            new InputStreamReader(
-                                    new FileInputStream(fileName.toString())
-                            ))){
+                            new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
+                    )){
             String line;
             ArrayList <String> tokens;
-            tokens = CSE.createArray(reader.readLine());
+            tokens = Utils.createArray(reader.readLine(), SEPARATORS);
             sequence0.setName(tokens.get(0));
             sequence0.setSeq(tokens.get(1));
             sequence0.setTop(tokens.get(2));
-            logger.info(String.format("REFERENCE: %s\n",sequence0.getName()));
+            logger.info(String.format("REFERENCE: %s",sequence0.getName()));
             bpSet(sequence0);
             lbp0 = lbp;
-            logger.info(String.format("%s\n%s %d\n",sequence0.getSeq(), sequence0.getTop(), lbp0));
+            logger.info(String.format("%s\n%s %d",sequence0.getSeq(), sequence0.getTop(), lbp0));
 
-            w01 = new int[lbp0 + 1];
-            w02 = new int[lbp0 + 1];
-            w1 = new int[lbp0 + 1];
-            w2 = new int[lbp0 + 1];
             for(int i = 1; i <= lbp0; i++){
-                w01[i] = w1[i];
-                w02[i] = w2[i];
-                logger.info(String.format("LBP0=%d %s%d %s%d\n", i, sequence0.getSeq().charAt(w01[i] - 1), w01[i],
-                        sequence0.getSeq().charAt(w02[i] - 1), w02[i]));
+                w01.add(w1.get(i));
+                w02.add(w2.get(i));
+                logger.info(String.format("LBP0=%d %s%d %s%d", i, sequence0.getSeq().charAt(w01.get(i) - 1), w01.get(i),
+                        sequence0.getSeq().charAt(w02.get(i) - 1), w02.get(i)));
             }
             Sequence sequence;
             for(;(line = reader.readLine()) != null;){
-                tokens = CSE.createArray(line);
+                tokens = Utils.createArray(line, SEPARATORS);
                 if(tokens.size() <= 11)
                     continue;
                 sequence = new Sequence();
@@ -154,18 +131,20 @@ public class Homology {
                     sequence.setTop(sequence.getTop() + ";" + tokens.get(i + 1));
                 }
                 homology(sequence);
-                seqLength = sequence.getSeq().length();
-                logger.info(String.format("%s %8.3f %3d\n", line, homeSeq * 100 / seqLength, homeBp));
+                logger.info(String.format("%s %8.3f %3d", line, (float)(homeSeq * 100) / sequence.getSeq().length(), homeBp));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     public static void main(String[] args){
         Homology homo = new Homology();
-        System.out.println(Path.of(".").toAbsolutePath());
-        homo.compute(Path.of(".", "files", "ur4_L1_0.txt"));
+        //ClassLoader classLoader = homo.getClass().getClassLoader();
+        //homo.logger.info(classLoader.getResource("ur4_L1_0.txt").getFile());
+        homo.compute("ur4_L1_0.txt");
     }
+
     public boolean isSaveToFile() {
         return saveToFile;
     }

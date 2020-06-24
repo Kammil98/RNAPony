@@ -52,7 +52,7 @@ public class FileChecker {
         Path cppFilePath = Path.of(resultsFilesPath.toString(), "c++", cppFileName);
         Path javaFilePath = Path.of(resultsFilesPath.toString(), "java", javaFileName);
         cse.setSaveToFile(true);
-        cse.changeLogFile(javaFilePath);
+        cse.changeLogHandler(javaFilePath);
         cse.findSequences();
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
         new File(javaFilePath.toString()).deleteOnExit();

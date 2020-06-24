@@ -33,7 +33,7 @@ public abstract class CSE {
      * Change file, where logs will be saving
      * @param filePath path to file, to write logs in
      */
-    public void changeLogFile(Path filePath){
+    public void changeLogHandler(Path filePath){
         for(Handler handler : logger.getHandlers()){//remove old handlers
             handler.close();
             logger.removeHandler(handler);
@@ -65,7 +65,7 @@ public abstract class CSE {
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%5$s%n");
         logger.setUseParentHandlers(false);
-        changeLogFile(Path.of("./", "default.txt"));
+        changeLogHandler(Path.of("./", "default.txt"));
 
         this.setSequenceFileName(sequenceFileName);
         this.setdBFileName(dBFileName);

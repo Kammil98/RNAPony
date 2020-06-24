@@ -1,5 +1,6 @@
-module Homology {
+module homology {
+    requires rnaponyutils;
     requires Cse;
     requires java.logging;
-    requires Tokenizer;
+    exports homology;
 }
