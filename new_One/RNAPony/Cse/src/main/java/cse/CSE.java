@@ -1,5 +1,7 @@
 package cse;
 
+import lombok.Getter;
+import lombok.Setter;
 import maintokenizers.StringTokenizer;
 import csemodels.Pair;
 import models.Sequence;
@@ -12,17 +14,22 @@ import java.util.function.Predicate;
 import java.util.logging.*;
 
 public abstract class CSE {
-    private String dBFileName;
+    @Setter @Getter
     private int insertion;
     public final Logger logger;
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
     public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
     public static final String SEPARATORS = ";";
+    @Getter
     private final ArrayList<Sequence> sequences;
+    @Setter @Getter
     private ArrayList<String> seqs;
+    @Setter @Getter
     private ArrayList<String> tops;
+    @Setter @Getter
     private ArrayList<Integer> bbps;
+    @Getter
     private Sequence sourceSequence;
 
     /**
@@ -37,7 +44,6 @@ public abstract class CSE {
         logger.setUseParentHandlers(false);
         Utils.changeLogHandler(logger);
 
-        this.setdBFileName(dBFileName);
         this.setInsertion(insertion);
         sequences = new ArrayList<>();
         seqs = new ArrayList<>();
@@ -45,7 +51,6 @@ public abstract class CSE {
         bbps = new ArrayList<>();
         sourceSequence = new Sequence();
         readDataBase(dBFileName);
-        //initData(sequenceFileName, dBFileName);
     }
 
     /**
@@ -63,7 +68,6 @@ public abstract class CSE {
     public void initData(String MPseqFileName){
         sourceSequence = new Sequence();
         readMpSeq(MPseqFileName);
-        //readDataBase(dbFileName);
         setSeqs(Utils.createArray(sourceSequence.getSeq(), SEPARATORS));
         setTops(Utils.createArray(sourceSequence.getTop(), SEPARATORS));
         setBbps(Utils.createArrayInt("", SEPARATORS));
@@ -218,53 +222,5 @@ public abstract class CSE {
             }
             concatTopAndSeq(newSequence, sequence, tmp, 0, vlength_seq.get(0));
         }
-    }
-
-    public ArrayList<Sequence> getSequences() {
-        return sequences;
-    }
-
-    public Sequence getSourceSequence() {
-        return sourceSequence;
-    }
-
-    public ArrayList<String> getSeqs() {
-        return seqs;
-    }
-
-    public void setSeqs(ArrayList<String> seqs) {
-        this.seqs = seqs;
-    }
-
-    public ArrayList<String> getTops() {
-        return tops;
-    }
-
-    public void setTops(ArrayList<String> tops) {
-        this.tops = tops;
-    }
-
-    public ArrayList<Integer> getBbps() {
-        return bbps;
-    }
-
-    public void setBbps(ArrayList<Integer> bbps) {
-        this.bbps = bbps;
-    }
-
-    public int getInsertion() {
-        return insertion;
-    }
-
-    public void setInsertion(int insertion) {
-        this.insertion = insertion;
-    }
-
-    public String getdBFileName() {
-        return dBFileName;
-    }
-
-    public void setdBFileName(String dBFileName) {
-        this.dBFileName = dBFileName;
     }
 }

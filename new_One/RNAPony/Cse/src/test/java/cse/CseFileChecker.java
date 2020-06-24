@@ -4,9 +4,6 @@ import utils.FileChecker;
 import utils.Utils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,18 +16,7 @@ public class CseFileChecker extends FileChecker {
      * @param cse CSE object to find Sequences
      */
     protected void checkFile( String sourceFile, String cppFileName, String javaFileName, CSE cse){
-        Path cppFilePath = Path.of("results", "c++", cppFileName);
-        Path javaFilePath = Path.of("results", "java", javaFileName);
-        ClassLoader classLoader = cse.getClass().getClassLoader();
-        //substring(6), to cut off "file: "
-        javaFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6), javaFilePath.toString());
-        cppFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6), cppFilePath.toString());
-
-        try {//create file and directory if it doesn't exist
-            Files.createDirectories(javaFilePath.getParent());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PreparePaths(cppFileName, javaFileName, CseFileChecker.class);
         Utils.changeLogHandler(cse.logger, javaFilePath);
         cse.compute(sourceFile);
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));

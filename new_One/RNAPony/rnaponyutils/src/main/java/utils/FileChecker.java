@@ -1,12 +1,34 @@
 package utils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FileChecker {
 
     private final Logger logger = Logger.getLogger(utils.FileChecker.class.getName());
+    protected Path cppFilePath;
+    protected Path javaFilePath;
+
+    public void PreparePaths(String cppFileName, String javaFileName, Class resourceClass){
+        cppFilePath = Path.of("results", "c++", cppFileName);
+        javaFilePath = Path.of("results", "java", javaFileName);
+        ClassLoader classLoader = resourceClass.getClassLoader();
+        //substring(6), to cut off "file: "
+        javaFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6),
+                javaFilePath.toString());
+        cppFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6),
+                cppFilePath.toString());
+
+        try {//create file and directory if it doesn't exist
+            Files.createDirectories(javaFilePath.getParent());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Testing if two files are equal line by line
@@ -25,9 +47,10 @@ public class FileChecker {
                         .replaceAll(",", ".");
                 if(!line1.replaceAll("\\s+","")
                         .equals(correctedLine2)){
-                    logger.log(Level.SEVERE, "Following lines are not equal:\n\t" + line1 + "\t" + line1.length() + "letters\n\t" + line2 + "\t" + line2.length() + "letters");
-                    logger.log(Level.SEVERE, "After replacing:\n\t" + line1.replaceAll("\\s+","") + "\n\t" +
-                            correctedLine2);
+                    logger.log(Level.SEVERE, "Following lines are not equal:\n\t" + line1 + "\t" + line1.length()
+                            + "letters\n\t" + line2 + "\t" + line2.length() + "letters");
+                    logger.log(Level.SEVERE, "After replacing:\n\t" + line1.replaceAll("\\s+","")
+                            + "\n\t" + correctedLine2);
                     return false;
                 }
             }

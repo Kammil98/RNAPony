@@ -1,6 +1,8 @@
 package cse;
 
 import csemodels.Pair;
+import lombok.Getter;
+import lombok.Setter;
 import models.Sequence;
 import utils.Utils;
 
@@ -11,6 +13,7 @@ public class Loop extends CSE{
 
     private static int li;
     private static int start, limit;
+    @Setter @Getter
     private boolean openLoop;
 
     /**
@@ -154,13 +157,5 @@ public class Loop extends CSE{
             }
             steps.set(i2, steps_origin.get(i2));
         }
-    }
-
-    public boolean isOpenLoop() {
-        return openLoop;
-    }
-
-    public void setOpenLoop(boolean openLoop) {
-        this.openLoop = openLoop;
     }
 }
