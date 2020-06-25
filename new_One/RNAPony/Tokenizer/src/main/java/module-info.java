@@ -1,3 +1,3 @@
 module Tokenizer {
-    exports maintokenizers;
+    exports maintokenizers to Cse;
 }

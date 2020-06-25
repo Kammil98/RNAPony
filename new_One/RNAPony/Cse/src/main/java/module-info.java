@@ -4,6 +4,5 @@ module Cse {
     requires static lombok;
     requires rnaponyutils;
     requires homology;
-    opens cse;
     exports cse;
 }
