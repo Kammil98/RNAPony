@@ -3,4 +3,6 @@ module rnaponyutils {
     exports models;
     requires java.logging;
     requires static lombok;
+    opens models;
+    opens utils;
 }

@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class FileChecker {
+public abstract class FileChecker {
 
     private final Logger logger = Logger.getLogger(utils.FileChecker.class.getName());
     protected Path cppFilePath;
@@ -26,7 +26,7 @@ public class FileChecker {
         try {//create file and directory if it doesn't exist
             Files.createDirectories(javaFilePath.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -47,18 +47,18 @@ public class FileChecker {
                         .replaceAll(",", ".");
                 if(!line1.replaceAll("\\s+","")
                         .equals(correctedLine2)){
-                    logger.log(Level.SEVERE, "Following lines are not equal:\n\t" + line1 + "\t" + line1.length()
-                            + "letters\n\t" + line2 + "\t" + line2.length() + "letters");
-                    logger.log(Level.SEVERE, "After replacing:\n\t" + line1.replaceAll("\\s+","")
-                            + "\n\t" + correctedLine2);
+                    logger.log(Level.SEVERE, new StringBuilder("Following lines are not equal:\n\t").append(line1).append("\t").append(line1.length())
+                            .append("letters\n\t").append(line2).append("\t").append(line2.length()).append("letters").toString());
+                    logger.log(Level.SEVERE, new StringBuilder("After replacing:\n\t").append(line1.replaceAll("\\s+",""))
+                            .append("\n\t" + correctedLine2).toString());
                     return false;
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
             logger.log(Level.SEVERE, "Didn't found file filenameCpp or filenameJava.");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
         return true;
     }

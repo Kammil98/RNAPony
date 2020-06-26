@@ -167,7 +167,7 @@ public class Homology {
                 logger.info(String.format("%s %8.3f %3d", line, (float)(result.homeSeq * 100) / sequence.getSeq().length(), result.homeBp));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, e.getMessage());
         }
     }
 }

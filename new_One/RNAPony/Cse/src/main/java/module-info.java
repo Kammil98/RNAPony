@@ -5,4 +5,6 @@ module Cse {
     requires rnaponyutils;
     requires homology;
     exports cse;
+    opens cse;
+    opens csemodels;
 }

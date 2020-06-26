@@ -10,8 +10,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Utils {
+public final class Utils {
 
+    /**
+     * Utils constructor
+     */
+    private Utils(){}
     /**
      * Change file, for logger, where logs will be saving.
      * Delete all old loggers directories
@@ -28,7 +32,7 @@ public class Utils {
             try {
                 handler = new FileHandler(filePath.toString(), false);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.SEVERE, e.getMessage());
                 System.exit(-1);
             }
         }
