@@ -1,4 +1,0 @@
---patch-module
-rnaponyutils=_
---add-reads
-rnaponyutils=ALL-UNNAMED
