@@ -7,6 +7,9 @@
 # testing files
 results/
 
+# target files
+target/
+
 # BlueJ files
 *.ctxt
 
