@@ -5,6 +5,7 @@ import lombok.Setter;
 import maintokenizers.StringTokenizer;
 import csemodels.Pair;
 import models.Sequence;
+import utils.Computable;
 import utils.Utils;
 
 import java.io.*;
@@ -13,7 +14,7 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.logging.*;
 
-public abstract class CSE {
+public abstract class CSE implements Computable {
     @Setter @Getter
     private int insertion;
     public final Logger logger;

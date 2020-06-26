@@ -16,12 +16,12 @@ public class CseFileChecker extends FileChecker {
 
     /**
      * Preparing CSE params to test if two files are equal and test it
+     * @param sourceFileName name of file with sequence
      * @param cppFileName name of file with result of cpp program
      * @param javaFileName name of file to save result of java program
-     * @param sourceFileName name of file with sequence
      */
     @Override
-    protected void checkFile(String sourceFileName, String cppFileName, String javaFileName){
+    public void checkFile(String sourceFileName, String cppFileName, String javaFileName){
         PreparePaths(cppFileName, javaFileName, CseFileChecker.class);
         Utils.changeLogHandler(cse.logger, javaFilePath);
         cse.compute(sourceFileName);

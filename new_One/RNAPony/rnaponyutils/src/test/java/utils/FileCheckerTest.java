@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileCheckerTest {
     static class FileCheckerTester extends FileChecker{
         @Override
-        protected void checkFile(String sourceFileName, String cppFileName, String javaFileName) {
+        public void checkFile(String sourceFileName, String cppFileName, String javaFileName) {
         }
     }
     @Test

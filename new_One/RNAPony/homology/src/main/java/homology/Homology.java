@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import models.Sequence;
+import utils.Computable;
 import utils.Utils;
 import java.util.ArrayList;
 import java.util.logging.*;
 
-public class Homology {
+public class Homology implements Computable {
 
     public final Logger logger;
     private static final String SEPARATORS, BRACKET1, BRACKET2;

@@ -7,13 +7,13 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class FileChecker {
+public abstract class FileChecker implements ComparsionFiles{
 
     private final Logger logger = Logger.getLogger(utils.FileChecker.class.getName());
     protected Path cppFilePath;
     protected Path javaFilePath;
 
-    protected abstract void checkFile(String sourceFileName, String cppFileName, String javaFileName);
+    public abstract void checkFile(String sourceFileName, String cppFileName, String javaFileName);
 
     protected void PreparePaths(String cppFileName, String javaFileName, Class resourceClass){
         cppFilePath = Path.of("results", "c++", cppFileName);
@@ -38,7 +38,7 @@ public abstract class FileChecker {
      * @param filenameJava path to file with result of java program
      * @return true if files are equal, false otherwise
      */
-    protected boolean isContentEqual(String filenameCpp, String filenameJava){
+    public boolean isContentEqual(String filenameCpp, String filenameJava){
         try(BufferedReader CppReader = new BufferedReader(new InputStreamReader(new FileInputStream(filenameCpp)));
             BufferedReader javaReader2 = new BufferedReader(new InputStreamReader(new FileInputStream(filenameJava)))){
             for(String line1 = CppReader.readLine(), line2  = javaReader2.readLine(); line1 != null & line2 != null;
