@@ -1,12 +1,17 @@
 package homology;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class HomologyTest extends HomologyFileChecker {
-
+class HomologyTest{
+    private static HomologyFileChecker homologyFileChecker;
+    @BeforeAll
+    static void setUp(){
+        homologyFileChecker = new HomologyFileChecker();
+    }
     @Test
     void compute() {
-        checkFile("homology.txt", "homology.txt", "ur4_L1_0.txt");
+        homologyFileChecker.checkFile("ur4_L1_0.txt","homology.txt", "homology.txt");
     }
 
 }

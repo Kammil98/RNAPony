@@ -13,7 +13,9 @@ public abstract class FileChecker {
     protected Path cppFilePath;
     protected Path javaFilePath;
 
-    public void PreparePaths(String cppFileName, String javaFileName, Class resourceClass){
+    protected abstract void checkFile(String sourceFileName, String cppFileName, String javaFileName);
+
+    protected void PreparePaths(String cppFileName, String javaFileName, Class resourceClass){
         cppFilePath = Path.of("results", "c++", cppFileName);
         javaFilePath = Path.of("results", "java", javaFileName);
         ClassLoader classLoader = resourceClass.getClassLoader();
@@ -36,7 +38,7 @@ public abstract class FileChecker {
      * @param filenameJava path to file with result of java program
      * @return true if files are equal, false otherwise
      */
-    public boolean isContentEqual(String filenameCpp, String filenameJava){
+    protected boolean isContentEqual(String filenameCpp, String filenameJava){
         try(BufferedReader CppReader = new BufferedReader(new InputStreamReader(new FileInputStream(filenameCpp)));
             BufferedReader javaReader2 = new BufferedReader(new InputStreamReader(new FileInputStream(filenameJava)))){
             for(String line1 = CppReader.readLine(), line2  = javaReader2.readLine(); line1 != null & line2 != null;
@@ -47,10 +49,10 @@ public abstract class FileChecker {
                         .replaceAll(",", ".");
                 if(!line1.replaceAll("\\s+","")
                         .equals(correctedLine2)){
-                    logger.log(Level.SEVERE, new StringBuilder("Following lines are not equal:\n\t").append(line1).append("\t").append(line1.length())
-                            .append("letters\n\t").append(line2).append("\t").append(line2.length()).append("letters").toString());
-                    logger.log(Level.SEVERE, new StringBuilder("After replacing:\n\t").append(line1.replaceAll("\\s+",""))
-                            .append("\n\t" + correctedLine2).toString());
+                    logger.log(Level.SEVERE, "Following lines are not equal:\n\t" + line1 + "\t" + line1.length()
+                            + "letters\n\t" + line2 + "\t" + line2.length() + "letters");
+                    logger.log(Level.SEVERE, "After replacing:\n\t" + line1.replaceAll("\\s+", "")
+                            + "\n\t" + correctedLine2);
                     return false;
                 }
             }

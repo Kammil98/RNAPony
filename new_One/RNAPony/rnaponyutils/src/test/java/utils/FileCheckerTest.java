@@ -8,8 +8,10 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileCheckerTest {
-    class FileCheckerTester extends FileChecker{
-
+    static class FileCheckerTester extends FileChecker{
+        @Override
+        protected void checkFile(String sourceFileName, String cppFileName, String javaFileName) {
+        }
     }
     @Test
     void isContentEqual() {
