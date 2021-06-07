@@ -1,4 +1,4 @@
 module Tokenizer {
-    exports maintokenizers to Cse;
+    exports maintokenizers;
     opens maintokenizers;
 }

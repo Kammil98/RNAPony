@@ -15,13 +15,13 @@ class FileCheckerTest {
     }
     @Test
     void isContentEqual() {
-
+        int sysPrefixLen = new FileCheckerTester().getSystemPrefixLen();
         ClassLoader classLoader = FileCheckerTest.class.getClassLoader();
         Path javaFilePath = Path.of(Objects.requireNonNull(
-                classLoader.getResource(".")).toString().substring(6)
+                classLoader.getResource(".")).toString().substring(sysPrefixLen)
             ),
             cppFilePath = Path.of(Objects.requireNonNull(
-                    classLoader.getResource(".")).toString().substring(6)
+                    classLoader.getResource(".")).toString().substring(sysPrefixLen)
             );
         assertTrue(new FileCheckerTester().isContentEqual(
                 Path.of(cppFilePath.toString(), "cppur4_L1_0.txt").toString(),

@@ -15,14 +15,21 @@ public abstract class FileChecker implements ComparsionFiles{
 
     public abstract void checkFile(String sourceFileName, String cppFileName, String javaFileName);
 
+    public int getSystemPrefixLen(){
+        if (Path.of(".").getFileSystem().getSeparator().equals("\\"))//if this is windows
+            return 6;
+        else //if this is linux
+            return 5;
+    }
     protected void PreparePaths(String cppFileName, String javaFileName, Class resourceClass){
+        int sysPrefixLen = getSystemPrefixLen();
         cppFilePath = Path.of("results", "c++", cppFileName);
         javaFilePath = Path.of("results", "java", javaFileName);
         ClassLoader classLoader = resourceClass.getClassLoader();
         //substring(6), to cut off "file: "
-        javaFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6),
+        javaFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(sysPrefixLen),
                 javaFilePath.toString());
-        cppFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(6),
+        cppFilePath = Path.of(Objects.requireNonNull(classLoader.getResource(".")).toString().substring(sysPrefixLen),
                 cppFilePath.toString());
 
         try {//create file and directory if it doesn't exist
