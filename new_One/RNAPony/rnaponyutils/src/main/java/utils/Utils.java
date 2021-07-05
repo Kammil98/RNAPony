@@ -1,6 +1,9 @@
 package utils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.logging.*;
@@ -11,6 +14,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Utils {
+
+    public static final Logger errLogger = Logger.getLogger(Utils.class.getName() + "err");
+    public static final Logger stdLogger = Logger.getLogger(Utils.class.getName() + "std");
+
+    static {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%n");
+        Utils.errLogger.setUseParentHandlers(false);
+        Utils.changeLogHandler(errLogger);
+        Utils.stdLogger.setUseParentHandlers(false);
+        Utils.changeLogHandler(stdLogger);
+    }
 
     /**
      * Utils constructor
@@ -82,4 +96,99 @@ public final class Utils {
         Matcher tokenMatcher = delimsPattern.matcher(text);
         return tokenMatcher.results().map(MatchResult::group);
     }
+
+    /**
+     * Execute given command in blocking mode.
+     * @param command Command to execute.
+     * @param displayInputInRealTime whether to display or not data printed to standard output from executed process,
+     *                              while it's still working.
+     * @param stdLogger standard logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     * @param errLogger error logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     */
+    public static InputStream execCommand(String command, boolean displayInputInRealTime, Logger stdLogger, Logger errLogger){
+        Process proc;
+        InputStream err, std;
+        try {
+            proc = Runtime.getRuntime().exec(command);
+            err = proc.getErrorStream();
+            std = proc.getInputStream();
+            while (displayInputInRealTime && proc.isAlive()){
+                stdLogger.info(new String(std.readAllBytes(), StandardCharsets.UTF_8));
+                Thread.sleep(1000);
+            }
+            proc.waitFor();
+            if(proc.exitValue() != 0) {
+                stdLogger.severe("Couldn't exec comand:\n" + command);
+                errLogger.severe(new String(err.readAllBytes(), StandardCharsets.UTF_8));
+                System.exit(-1);
+            }
+            return proc.getInputStream();
+        } catch (IOException e) {
+            errLogger.severe("Unexpected IOException: \n" + e.getMessage());
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Execute given command in blocking mode.
+     * @param command Command to execute.
+     * @param stdLogger standard logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     * @param errLogger error logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     */
+    public static InputStream execCommand(String command, Logger stdLogger, Logger errLogger){
+        return execCommand(command, false, stdLogger, errLogger);
+    }
+
+    /**
+     * Check if directory exists and create, if it isn't,
+     * with all necessary parent directories, which also don't exist.
+     * If it's not possible, then message to stdLogger is printed.
+     * @param outDir directory, which existence will be checked .
+     * @param exitOnFail if this is equal true, then system will write msg also to errLogger
+     *                   and will kill JVM with status -1.
+     * @param stdLogger standard logger to print message, when creating directory isn't possible.
+     * @param errLogger error logger to print message, when creating directory isn't possible.
+     * @return true if directory exist or was successfully created. False otherwise.
+     */
+    public static boolean createDirIfNotExist(File outDir, boolean exitOnFail, Logger stdLogger, Logger errLogger){
+        if(!outDir.exists() && !outDir.mkdirs()) {
+            stdLogger.severe("Couldn't create directory:\n" + outDir.getAbsolutePath());
+            if(exitOnFail) {
+                errLogger.severe("Couldn't create directory:\n" + outDir.getAbsolutePath());
+                System.exit(-1);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if directory exists and create, if it isn't,
+     * with all necessary parent directories, which also don't exist.
+     * If it's not possible, then message to stdLogger is printed.
+     * @param outDir directory, which existence will be checked .
+     * @param stdLogger standard logger to print message, when creating directory isn't possible.
+     * @return true if directory exist or was successfully created. False otherwise.
+     */
+    public static boolean createDirIfNotExist(File outDir, Logger stdLogger){
+        return createDirIfNotExist(outDir, false, stdLogger, Utils.errLogger);
+    }
+
+    /**
+     * Check if directory exists and create, if it isn't,
+     * with all necessary parent directories, which also don't exist.
+     * If it's not possible, then message is logged by Utils.stdLogger.
+     * @param outDir directory, which existence will be checked .
+     * @return true if directory exist or was successfully created. False otherwise.
+     */
+    public static boolean createDirIfNotExist(File outDir){
+        return createDirIfNotExist(outDir, false, Utils.stdLogger, Utils.errLogger);
+    }
+
 }

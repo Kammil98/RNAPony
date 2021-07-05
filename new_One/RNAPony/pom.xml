@@ -20,6 +20,7 @@
         <module>Cse</module>
         <module>rnaponyutils</module>
         <module>homology</module>
+        <module>frabaseupdater</module>
     </modules>
 
     <dependencies>

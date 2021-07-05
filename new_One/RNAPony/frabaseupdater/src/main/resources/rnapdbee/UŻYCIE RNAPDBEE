@@ -1,0 +1,54 @@
+Bazowe odpalenie komendą: ./rnapdbee -a DSSR -d NONE -i 1ekd.cif -o ./output -p HYBRID
+
+usage: rnapdbee.standalone
+ -a,--analyzer <arg>                 (optional) base-pair analyzer, one
+                                     of: [RNAVIEW, MCANNOTATE, DSSR,
+                                     FR3D]. Default: DSSR
+ -c,--config <arg>                   (optional) config file. Default:
+                                     config.properties
+ -d,--drawer <arg>                   (optional) main drawer, one of:
+                                     [PSEUDOVIEWER, VARNA, VARNA_CLASSIC,
+                                     RCHIE, NONE]. Default: NONE
+ -f,--image-format <arg>             (optional) image format, one of:
+                                     [SVG, EPS, PDF, PNG]. Default: SVG
+ -h,--helices                        (optional) if set, 3DNA/DSSR will
+                                     analyze helices as well
+ -i,--input <arg>                    input file
+ -n,--non-canonical <arg>            (optional) non-canonical base-pairs
+                                     analysis mode, one of: [IGNORE,
+                                     ONLY_VISUALIZE, ANALYZE_VISUALIZE].
+                                     Default: IGNORE
+ -o,--output <arg>                   output directory
+ -p,--pseudoknot-finder <arg>        (optional) pseudoknot finder, one of:
+                                     [EG, EC, DPALL, DPOLD, DPNEW, FCFS,
+                                     HYBRID, COLORING_DEGREE,
+                                     COLORING_SIZE]. Default: HYBRID
+ -r,--isolated-base-pairs-handling   (optional) remove isolated,canonical
+                                     base-pairs
+
+W parametrze -i podajemy bezwzględną ścieżkę do pliku z modelem
+przestrzennym
+
+W parametrze -o podajemy ścieżkę do katalogu wynikowego
+
+Przykładowe uruchomienie:
+/opt/rnapdbee-standalone/rnapdbee -aDSSR -dNONE -i2spinDD.pdb
+-o./DSSR-2spinDD -pHYBRID
+
+Wyjątkiem lecącym z brakiem dostępu do pliku logu proszę się nie
+przejmować bo on nam w niczym nie przeszkadza.
+
+W rezultacie uruchomienia rnapdbee pojawia się katalog z wynikami
+DSSR-2spinDD.
+
+W którym znajduje się podkatalog 0 a w nim wszystkie wynikowe pliki:
+1) struktura drugorzędowa w notacji kropokowo-nawiasowej - whole.dbn
+2) struktura drugorzędowa w formacie BPSEQ - whole.bpseq
+3) struktura drugorzędowa w formacie CT - whole.ct
+4) interakcje niekanoniczne - noncanonical.csv
+5) validation log - validation.log uzupełniony o informacje o wartości
+użytych parametrów wejściowych typu analyzer, drawer, pseudoknot-finder
+itd.
+6) wizualizacja o ile została wygenerowana - structure.svg np. w
+DSSR-2spinDD/0. Aby generowała się Panu wizualizacja to musi Pan podmienić
+parametr -dNONE na -dVARNA -nONLY_VISUALIZE.

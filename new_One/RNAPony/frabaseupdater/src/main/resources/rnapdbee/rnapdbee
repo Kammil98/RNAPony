@@ -1,0 +1,23 @@
+#! /bin/bash
+ARGS=
+while getopts a:c:d:f:hi:n:o:p:r OPT; do
+    case $OPT in
+        c|i|o)
+            ARGS="-$OPT $(readlink -m $OPTARG) $ARGS"
+            ;;
+        a|d|f|n|p)
+            ARGS="-$OPT $OPTARG $ARGS"
+            ;;
+        h|r)
+            ARGS="-$OPT $ARGS"
+            ;;
+        *)
+            echo "Unknown option: $OPT"
+            ;;
+    esac
+done
+
+echo "Parsed arguments: $ARGS" >&2
+
+cd $(dirname $(readlink -f $0))
+LANG=C java -jar rnapdbee.standalone-*-jar-with-dependencies.jar $ARGS

@@ -1,0 +1,9 @@
+Base-pair;Interaction type;Canonical;Saenger;Leontis-Westhof;BPh;BR;Represented in dot-bracket
+A.g1 - B.C8;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N
+A.G2 - B.C7;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N
+A.C3 - B.G6;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N
+A.G4 - B.U5;base - base;Y;XXVIII;cWW;UNKNOWN;UNKNOWN;N
+A.U5 - B.G4;base - base;Y;XXVIII;cWW;UNKNOWN;UNKNOWN;N
+A.G6 - B.C3;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N
+A.C7 - B.G2;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N
+A.C8 - B.g1;base - base;Y;XIX;cWW;UNKNOWN;UNKNOWN;N

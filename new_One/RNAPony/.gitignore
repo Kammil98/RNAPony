@@ -1,3 +1,7 @@
+/frabase_update/
+*.cif
+*.pdb
+errApp.txt
 ### IntelliJ IDEA ###
 .idea
 *.iws
