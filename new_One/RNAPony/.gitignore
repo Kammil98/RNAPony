@@ -2,6 +2,12 @@
 *.cif
 *.pdb
 errApp.txt
+### Files, which isn't mine. ###
+# Ask dr. Maciej Antczak for rnapdbee
+/frabaseupdater/src/main/resources/rnapdbee/*
+# download batch_download from this link: https://www.rcsb.org/docs/programmatic-access/batch-downloads-with-shell-script 
+/frabaseupdater/src/main/resources/batch_download.sh
+/frabaseupdater/src/main/resources/cse.txt
 ### IntelliJ IDEA ###
 .idea
 *.iws
