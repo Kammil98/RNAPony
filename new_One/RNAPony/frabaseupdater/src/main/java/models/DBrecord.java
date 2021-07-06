@@ -1,6 +1,5 @@
 package models;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,13 +10,14 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.*;
 
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 public class DBrecord {
 
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String CHARS_BP2 = ")]}>abcdefghijklmnopqrstuvwxyz";
 
     String iD;
+    int modelNo;
     String chain;
     double resol;
     String seq;
@@ -129,8 +129,20 @@ public class DBrecord {
         return 999.99d;
     }
 
-    public void computeRecord(final DotFile dotFile, final String id){
+    /**
+     * Compute values of record based on 2D representation
+     * of structure and filename (structure of preprocessed
+     * filename is following: id_modelNo.cif).
+     * @param dotFile Object, which represent 2D structure.
+     * @param filename name of preprocessed file according to pattern:
+     *                 id_modelNo.cif, where id means id from Protein Data Bank.
+     */
+    public void computeRecord(final DotFile dotFile, final String filename){
+        String id = filename.substring(0, 4);
         setID(id);
+        setModelNo(Integer.parseInt(
+                filename.substring(5, filename.lastIndexOf('.'))
+        ));
         setChain(dotFile.getName());
         setResol(checkResol(id));
         setSeq(dotFile.getSeq());
@@ -141,6 +153,6 @@ public class DBrecord {
 
     @Override
     public String toString() {
-        return iD + " " + chain + " " + resol + " " + seq + " " + dot + " " + dotIntervals + " " + maxOrder;
+        return iD + " " + modelNo + " " + chain + " " + resol + " " + seq + " " + dot + " " + dotIntervals + " " + maxOrder;
     }
 }

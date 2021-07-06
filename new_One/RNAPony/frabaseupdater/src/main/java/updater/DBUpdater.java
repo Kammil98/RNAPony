@@ -88,7 +88,7 @@ public class DBUpdater {
         return changedIdListPath;
     }
 
-    public void downloadAndUpdateNewStructures(){
+    public File downloadAndUpdateNewStructures(){
         File outDir = Path.of(Main.frabaseDir.toString(), "3DStructures").toFile();
         Utils.createDirIfNotExist(outDir, Main.stdLogger);
 
@@ -101,7 +101,7 @@ public class DBUpdater {
                 true,
                 Main.stdLogger,
                 Main.errLogger);
-        computeAllRecords(outDir);
+        return outDir;
     }
 
     /**
@@ -139,7 +139,7 @@ public class DBUpdater {
             start = System.currentTimeMillis();
             record = new DBrecord();
             Main.stdLogger.info("Compute record");
-            record.computeRecord(dotFile, preprocessedFilePath.getFileName().toString().substring(0, 4));
+            record.computeRecord(dotFile, preprocessedFilePath.getFileName().toString());
             records.add(record);
             finish = System.currentTimeMillis();
             Main.stdLogger.info("Time for computing record: " + (finish - start));
@@ -197,7 +197,7 @@ public class DBUpdater {
      * given directory
      * @param dir directory with 3D structures
      */
-    public void computeAllRecords(final File dir){
+    public void updateDB(final File dir){
         ArrayList<DBrecord> records = new ArrayList<>();
         prepareDBFile();
         String unpackedFileName;

@@ -483,7 +483,7 @@ def preprocess_structure(structure3d_orig: bin, structure3d_orig_filename: str,
         structures_splitted_strings = [structure_to_string(structure_splitted, stem, structure3d_output_ext)
                                         for structure_splitted in structures_splitted]
         # structures_splitted_names to nazwa pliku
-        structures_splitted_names = [f"{stem}_model{structure[0].name}{structure3d_output_ext}" for
+        structures_splitted_names = [f"{stem}_{structure[0].name}{structure3d_output_ext}" for
                                         structure in
                                         structures_splitted]
         """#baza danych
@@ -577,7 +577,7 @@ def generate_request_id() -> str:
 
 if __name__ == "__main__":
     filename = sys.argv[1]
-    split_policy = "all"
+    split_policy = sys.argv[3]#"all"
     f = open(filename, "r")
     structure3d_orig = f.read()
     preprocess_structure(structure3d_orig.encode(), filename, split_policy, sys.argv[2])
