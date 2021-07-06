@@ -11,12 +11,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
 public class DBUpdater {
 
     private static final ConcurrentLinkedQueue<DBrecord> records = new ConcurrentLinkedQueue<>();
-    private static int processedFiles = 0;
+    private static AtomicInteger processedFiles = new AtomicInteger();
+    private static int fileNo = 0;
+
     /**
      * Download file with new structures in PDB.
      * @return Path to downloaded file.
@@ -64,11 +67,9 @@ public class DBUpdater {
         StringTokenizer structure;
         int counter = 0;
 
-        if(Main.getVerboseMode() >= 2)
-            Main.stdLogger.info("Downloading list of resolutions of new structures.");
+        Main.verboseInfo("Downloading list of resolutions of new structures.", 2);
         downloadResolList();
-        if(Main.getVerboseMode() >= 2)
-            Main.stdLogger.info("Filtering out DNA structures.");
+        Main.verboseInfo("Filtering out DNA structures.", 2);
         try(Scanner structuresReader = new Scanner(changedListPath.toFile());
             BufferedWriter bw = new BufferedWriter(
                     new OutputStreamWriter(new FileOutputStream(changedIdListPath.toString())))){
@@ -89,9 +90,8 @@ public class DBUpdater {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(Main.getVerboseMode() >= 1)
-            Main.stdLogger.info(counter + " RNA structures will be downloaded. " +
-                    "Keep calm. It will take some time.");
+        Main.verboseInfo(counter + " RNA structures will be downloaded. " +
+                "Keep calm. It will take some time.", 1);
         return changedIdListPath;
     }
 
@@ -100,11 +100,10 @@ public class DBUpdater {
         String command;
         boolean displayInfo = (Main.getVerboseMode() >= 2);
         Utils.createDirIfNotExist(outDir.toFile(), Main.stdLogger);
-        if(Main.getVerboseMode() >= 2)
-            Main.stdLogger.info("Downloading list of new structures.");
+
+        Main.verboseInfo("Downloading list of new structures.", 2);
         Path newStrucListPath = getNewStructuresList();
-        if(Main.getVerboseMode() >= 1)
-            Main.stdLogger.info("Downloading new nuc and prot-nuc structures.");
+        Main.verboseInfo("Downloading new nuc and prot-nuc structures.", 1);
         Path downloadScriptPath = Path.of(
                 Objects.requireNonNull(getClass().getResource("/batch_download.sh")).getPath());
         command = downloadScriptPath + " -f " + newStrucListPath + " -o " + outDir.toAbsolutePath() + " -c";
@@ -122,38 +121,52 @@ public class DBUpdater {
         return dots.matches(("^[.|-]*$"));
     }
 
-    protected ArrayList<DBrecord> computeRecord(Path filePath){
+    /**
+     * Compute all records of RNAfrabase based on file with 3D representation of structure.
+     *
+     * @param filePath path to file with structure with all its models.
+     * @return list of records, which represents models
+     *          from file with 3D structure of RNA.
+     */
+    protected ArrayList<DBrecord> computeStructure(Path filePath){
         ArrayList<DBrecord> records = new ArrayList<>();
-        DotFileCreator dotFileCreator = new DotFileCreator();
-        DotFile dotFile;
         DBrecord record;
-        Path preprocessedFilePath;
         Path preprocessedFileDir;
-        if(Main.getVerboseMode() >= 3)
-            Main.stdLogger.info("Preprocess " +  filePath);
+        Main.verboseInfo("Preprocess " +  filePath, 3);
         preprocessedFileDir = new Preprocessor().extractRNA(filePath);
         String[] fileList = Objects.requireNonNull(preprocessedFileDir.toFile().list());
         for(String newFileName: fileList){
-            preprocessedFilePath = preprocessedFileDir.resolve(newFileName);
-            dotFile = dotFileCreator.getDotFile(preprocessedFilePath);
-            if(isOnlyDots(dotFile.getDot())){
-                if(Main.getVerboseMode() >= 2)
-                    Main.stdLogger.info(newFileName + " doesn't contain pairs - omitting this model.");
-                preprocessedFilePath.toFile().delete();
-                continue;
-            }
-            record = new DBrecord();
-            if(Main.getVerboseMode() >= 3)
-                Main.stdLogger.info("Compute record");
-            record.computeRecord(dotFile, preprocessedFilePath.getFileName().toString());
-            records.add(record);
-            if(Main.getVerboseMode() >= 3)
-                Main.stdLogger.info("Record created\n");
-            preprocessedFilePath.toFile().delete();
+            record = computeModel(preprocessedFileDir.resolve(newFileName));
+            if(record != null)
+                records.add(record);
         }
         if(records.size() > 1)
             Main.stdLogger.info("!!!!!!!!!!!!!!!!FOUND 2 records for " + filePath + "!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         return records;
+    }
+
+    /**
+     * Compute record of RNAfrabase based on file with 3D representation of model.
+     *
+     * @param preprocessedFilePath path to file with model.
+     * @return record of RNAfrabase, which represent given model.
+     */
+    public DBrecord computeModel(Path preprocessedFilePath){
+        DotFile dotFile;
+        DBrecord record;
+        dotFile = new DotFileCreator().getDotFile(preprocessedFilePath);
+        if(isOnlyDots(dotFile.getDot())){
+            Main.verboseInfo(preprocessedFilePath.getFileName() +
+                    " doesn't contain pairs - omitting this model.", 2);
+            preprocessedFilePath.toFile().delete();
+            return null;
+        }
+        record = new DBrecord();
+        Main.verboseInfo("Compute record", 3);
+        record.computeRecord(dotFile, preprocessedFilePath.getFileName().toString());
+        Main.verboseInfo("Record created\n", 3);
+        preprocessedFilePath.toFile().delete();
+        return record;
     }
 
     public void saveRecordsToFile(ArrayList<DBrecord> records){
@@ -175,7 +188,7 @@ public class DBUpdater {
         try {
             outFile.delete();
             if(!outFile.createNewFile()){
-                Main.stdLogger.severe("Couldn't access file:\n" + outFile.getAbsolutePath());
+                Main.verboseInfo("Couldn't access file:\n" + outFile.getAbsolutePath(), 1);
                 Main.errLogger.severe("Couldn't access file:\n" + outFile.getAbsolutePath());
             }
         } catch (IOException e) {
@@ -217,13 +230,14 @@ public class DBUpdater {
      * @param dir directory with 3D structures
      */
     public void updateDB(final Path dir){
-        if(Main.getVerboseMode() >= 1)
-            Main.stdLogger.info("Computing records.");
-        prepareDBFile();
+        List<Callable<Byte>> callables = new ArrayList<>();
+        Main.verboseInfo("Computing records.", 1);
         FilenameFilter filter = (dir1, name) -> name.endsWith(".gz");
         String[] fileList = Objects.requireNonNull(dir.toFile().list(filter));
         ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
-        List<Callable<Byte>> callables = new ArrayList<>();
+
+        prepareDBFile();
+        fileNo = fileList.length;
         for (String file : fileList) {
             callables.add(new Worker(dir.resolve(file)));
         }
@@ -245,16 +259,16 @@ public class DBUpdater {
         unpackedFilePath = filePath.getParent()
                 .resolve(String.valueOf(Thread.currentThread().getId()))
                 .resolve(unpackedFileName);
-        if(Main.getVerboseMode() >= 2)
-            Main.stdLogger.info("Processing " +  fileName);
+        Main.verboseInfo("Processing " +  fileName + ". " +
+                processedFiles.get() + "/" + fileNo + " files processed.", 2);
         unGzipFile(filePath, unpackedFilePath);
-        records.addAll(computeRecord(unpackedFilePath));
+        records.addAll(computeStructure(unpackedFilePath));
         saveRecordsToFile();
         if(!unpackedFilePath.toFile().delete()){
             unpackedFilePath.toFile().deleteOnExit();
         }
         finish = System.currentTimeMillis();
-        if(Main.getVerboseMode() >= 3)
-            Main.stdLogger.info("Time for whole file: " + (finish - start));
+        Main.verboseInfo("Time for whole file: " + (finish - start), 3);
+        processedFiles.incrementAndGet();
     }
 }

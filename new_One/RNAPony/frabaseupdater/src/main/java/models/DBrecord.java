@@ -66,11 +66,9 @@ public class DBrecord {
         char currChar;
         for(int i = 0; i <= getMaxOrder(); i ++)
             stacks.add(new ArrayDeque<>());
-        for(int i = 0; i < dot.length(); i++){
-            //"x" sign should disapper till end of this function
-            //just make place in stringbuilder
-            intervals.append("x;");
-        }
+        //"x" sign should disapper till end of this function
+        //just make place in stringbuilder
+        intervals.append("x;".repeat(dot.length()));
         for (int charNo = 0; charNo < dot.length(); charNo++) {
             currChar = dot.charAt(charNo);
             if(currChar == '.' || currChar == '-'){
@@ -104,8 +102,7 @@ public class DBrecord {
      */
     private double checkResol(String id){
         StringTokenizer tokenizer;
-        String line, resol = null;
-        int result;
+        String line, resol;
         id = id.substring(0, 4).toUpperCase();
         try(Scanner dotReader = new Scanner(
                 new File(
@@ -123,8 +120,8 @@ public class DBrecord {
                 }
             }
         } catch (FileNotFoundException e) {
-
-            Main.errLogger.severe("Couldn't find output .dbn file: resolu.idx");
+            Main.errLogger.severe("Couldn't find file: resolu.idx");
+            System.exit(-1);
         }
         return 999.99d;
     }

@@ -11,6 +11,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.logging.Level;
 
 public class PropertiesReader {
 
@@ -54,8 +55,7 @@ public class PropertiesReader {
                 file.close();
             }
         } catch (FileNotFoundException e) {
-            if(Main.getVerboseMode() >= 1)
-                Main.stdLogger.severe("Couldn't find " + path + " file. Using default values.");
+            Main.verboseInfo("Couldn't find " + path + " file. Using default values.", 1);
             path = null;
         } catch (IOException e) {
             Main.errLogger.severe("Unexpected problem with reading file:\n" + e.getMessage());
@@ -87,11 +87,11 @@ public class PropertiesReader {
                 try {
                     Preprocessor.setPreprocessType(PreprocessType.valueOf(val.toUpperCase()));
                 }catch ( IllegalArgumentException e){
-                    if(Main.getVerboseMode() >= 1) {
-                        Main.stdLogger.severe("Incorrect type of preprocessing: " + val + ". Correct types are: " +
-                                Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
-                                defaultProperties.getProperty(key.toString()));
-                    }
+                    Main.verboseInfo("Incorrect type of preprocessing: " + val + ". Correct types are: " +
+                                    Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
+                                    defaultProperties.getProperty(key.toString()),
+                            1,
+                            Level.SEVERE);
                     Preprocessor.setPreprocessType(PreprocessType.valueOf(defaultProperties.getProperty(key.toString())));
                 }
                 break;
@@ -100,11 +100,11 @@ public class PropertiesReader {
                 if(day >= 1 && day <= 7){
                     Main.dayOfWeek = day;
                 } else{
-                    if(Main.getVerboseMode() >= 1) {
-                        Main.stdLogger.severe("Incorrect day given:" + val + ". Correct day values:" +
-                                "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
-                                "Setting up default day: " + defaultProperties.getProperty(key.toString()));
-                    }
+                    Main.verboseInfo("Incorrect day given:" + val + ". Correct day values:" +
+                                    "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
+                                    "Setting up default day: " + defaultProperties.getProperty(key.toString()),
+                            1,
+                            Level.SEVERE);
                     Main.dayOfWeek = day;
                 }
                 break;
@@ -113,10 +113,10 @@ public class PropertiesReader {
                     Main.time = LocalTime.parse(val);
                 }
                 catch (DateTimeParseException e){
-                    if(Main.getVerboseMode() >= 1) {
-                        Main.stdLogger.severe("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
-                                "Setting up default time: " + defaultProperties.getProperty(key.toString()));
-                    }
+                    Main.verboseInfo("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
+                                    "Setting up default time: " + defaultProperties.getProperty(key.toString()),
+                            1,
+                            Level.SEVERE);
                     Main.time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
                 }
                 break;

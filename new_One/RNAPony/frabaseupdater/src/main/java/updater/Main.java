@@ -6,6 +6,7 @@ import utils.Utils;
 
 import java.nio.file.Path;
 import java.time.LocalTime;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
@@ -21,6 +22,29 @@ public class Main {
             "are printed. Possible verbosity levels are in range 0-3. 0 Means no information printed")
     @Getter
     private static int verboseMode = 2;
+
+    /**
+     * Print message, if verbose level is equal or higher than given.
+     *
+     * @param message message to print.
+     * @param verboseLevel level of priority of this message.
+     * @param level One of the message level identifiers, e.g., SEVERE.
+     */
+    public static void verboseInfo(String message, int verboseLevel, Level level){
+        if(Main.getVerboseMode() >= verboseLevel)
+            Main.stdLogger.log(level, message);
+    }
+
+    /**
+     * Print info, if verbose level is equal or higher than given.
+     *
+     * @param message message to print.
+     * @param verboseLevel level of priority of this message.
+     */
+    public static void verboseInfo(String message, int verboseLevel){
+        verboseInfo(message, verboseLevel, Level.INFO);
+    }
+
     static {
         System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%n");
         Main.errLogger.setUseParentHandlers(false);
