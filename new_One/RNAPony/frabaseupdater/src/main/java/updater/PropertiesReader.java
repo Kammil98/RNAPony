@@ -39,16 +39,23 @@ public class PropertiesReader {
 
     private static void downloadPropertyFile(){
         defaultProperties = new Properties();
+
         try {
             defaultProperties.load(PropertiesReader.class.getResourceAsStream("/application.properties"));
+        } catch (IOException e) {
+            Main.errLogger.severe("Unexpected problem with reading file:\n" + e.getMessage());
+            System.exit(-1);
+        }
+        try{
             customProperties = new Properties(defaultProperties);
             if (path != null) {
                 FileInputStream file = new FileInputStream(path);
                 customProperties.load(file);
+                file.close();
             }
         } catch (FileNotFoundException e) {
-            Main.stdLogger.severe("Couldn't find " + path + " file. Using default values.");
-            Main.errLogger.severe("Couldn't find " + path + " file. Using default values.");
+            if(Main.getVerboseMode() >= 1)
+                Main.stdLogger.severe("Couldn't find " + path + " file. Using default values.");
             path = null;
         } catch (IOException e) {
             Main.errLogger.severe("Unexpected problem with reading file:\n" + e.getMessage());
@@ -80,9 +87,11 @@ public class PropertiesReader {
                 try {
                     Preprocessor.setPreprocessType(PreprocessType.valueOf(val.toUpperCase()));
                 }catch ( IllegalArgumentException e){
-                    Main.stdLogger.severe("Incorrect type of preprocessing: " + val + ". Correct types are: " +
-                            Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
-                            defaultProperties.getProperty(key.toString()));
+                    if(Main.getVerboseMode() >= 1) {
+                        Main.stdLogger.severe("Incorrect type of preprocessing: " + val + ". Correct types are: " +
+                                Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
+                                defaultProperties.getProperty(key.toString()));
+                    }
                     Preprocessor.setPreprocessType(PreprocessType.valueOf(defaultProperties.getProperty(key.toString())));
                 }
                 break;
@@ -91,9 +100,11 @@ public class PropertiesReader {
                 if(day >= 1 && day <= 7){
                     Main.dayOfWeek = day;
                 } else{
-                    Main.stdLogger.severe("Incorrect day given:" + val + ". Correct day values:" +
-                            "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
-                            "Setting up default day: " + defaultProperties.getProperty(key.toString()));
+                    if(Main.getVerboseMode() >= 1) {
+                        Main.stdLogger.severe("Incorrect day given:" + val + ". Correct day values:" +
+                                "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
+                                "Setting up default day: " + defaultProperties.getProperty(key.toString()));
+                    }
                     Main.dayOfWeek = day;
                 }
                 break;
@@ -102,16 +113,14 @@ public class PropertiesReader {
                     Main.time = LocalTime.parse(val);
                 }
                 catch (DateTimeParseException e){
-                    Main.stdLogger.severe("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
-                            "Setting up default time: " + defaultProperties.getProperty(key.toString()));
+                    if(Main.getVerboseMode() >= 1) {
+                        Main.stdLogger.severe("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
+                                "Setting up default time: " + defaultProperties.getProperty(key.toString()));
+                    }
                     Main.time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
                 }
                 break;
         }
-    }
-
-    private static void displayProperties(){
-
     }
 
     /**

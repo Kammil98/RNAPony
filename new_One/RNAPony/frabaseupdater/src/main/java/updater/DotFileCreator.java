@@ -2,13 +2,14 @@ package updater;
 
 import models.DBrecord;
 import models.DotFile;
+import utils.Utils;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
-public class DataLoader {
+public class DotFileCreator {
 
     private static final Path pdbeeOutDir = Path.of(Main.frabaseDir.getFileName().toString(),"output");
 
@@ -21,19 +22,20 @@ public class DataLoader {
     /**
      * Create Dot file with use of RNApdbee.
      * @param filePath path to 3D file.
+     * @return directory, where output of RNApdbee was written
      */
-    private void createDotFile(final Path filePath){
+    private Path createDotFile(final Path filePath){
         Process proc;
         String command, inputFilePath = filePath.toAbsolutePath().toString();
-        File outDir = new File(pdbeeOutDir.toString());
+        Path outDir = Path.of(pdbeeOutDir.toString(), String.valueOf(Thread.currentThread().getId()));
         InputStream err;
         try {
-            if(!outDir.exists())
-                outDir.mkdirs();
+            Utils.createDirIfNotExist(outDir.toFile(), true, Main.stdLogger, Main.errLogger);
+
             URL rnapdbeUrl = getClass().getResource("/rnapdbee/rnapdbee");
             command = rnapdbeUrl.getPath()
                     + " -a DSSR -d NONE -i " + inputFilePath
-                    + " -o " + outDir.getAbsolutePath()
+                    + " -o " + outDir.toAbsolutePath()
                     + " -p HYBRID";
             proc = Runtime.getRuntime().exec(command);
             //err = proc.getErrorStream();
@@ -43,6 +45,7 @@ public class DataLoader {
         }catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return outDir;
     }
 
     /**
@@ -68,9 +71,12 @@ public class DataLoader {
     }
 
     public DotFile getDotFile(final Path filePath){
-        Main.stdLogger.info("Prepare dot file: run RNApdbee for " + filePath.getFileName());
-        createDotFile(filePath);
-        DotFile dotFile = readDotFile(Path.of(pdbeeOutDir.toString(), "0", "strands.dbn"));
+        Path outDir;
+        DotFile dotFile;
+        if(Main.getVerboseMode() >= 3)
+            Main.stdLogger.info("Prepare dot file: run RNApdbee for " + filePath.getFileName());
+        outDir = createDotFile(filePath);
+        dotFile = readDotFile(Path.of(outDir.toString(), "0", "strands.dbn"));
         return dotFile;
     }
 }

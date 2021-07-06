@@ -1,8 +1,9 @@
 package updater;
 
+import com.beust.jcommander.Parameter;
+import lombok.Getter;
 import utils.Utils;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalTime;
 import java.util.logging.Logger;
@@ -15,7 +16,11 @@ public class Main {
 
     public static int dayOfWeek;
     public static LocalTime time;
-
+    public static int WorkersNo = 4;
+    @Parameter(names = {"--verbose", "-v"}, description = "Level of verbosity. The higher value, the more information " +
+            "are printed. Possible verbosity levels are in range 0-3. 0 Means no information printed")
+    @Getter
+    private static int verboseMode = 2;
     static {
         System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%n");
         Main.errLogger.setUseParentHandlers(false);
@@ -27,7 +32,7 @@ public class Main {
     public static void main(String[] args){
         PropertiesReader.loadProperties(args);
         DBUpdater updater = new DBUpdater();
-        File downloadDir = updater.downloadAndUpdateNewStructures();
+        Path downloadDir = updater.downloadNewStructures();
         updater.updateDB(downloadDir);
     }
 }

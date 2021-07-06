@@ -20,15 +20,17 @@ public class Preprocessor {
             description = "If equals all, then all models in file are processed." +
                     "If equals first, then only first model in file is processed. Possible types are: all, first.")
     private static PreprocessType preprocessType = PreprocessType.ALL;
-    public void extractRNA(final Path filePath){
+    public Path extractRNA(final Path filePath){
         URL preprocesing3dUrl = getClass().getResource("/preprocesing3d.py");
+        Path outDir = preprocessOutDir.resolve(String.valueOf(Thread.currentThread().getId()));
+
         String command = "python3 " + Objects.requireNonNull(preprocesing3dUrl).getPath()
                 + " " + filePath.toAbsolutePath()
-                + " " + preprocessOutDir.toAbsolutePath()
+                + " " + outDir.toAbsolutePath()
                 + " " + preprocessType.toString();
 
-        File outDir = preprocessOutDir.toFile();
-        Utils.createDirIfNotExist(outDir, Main.stdLogger);
+        Utils.createDirIfNotExist(outDir.toFile(), Main.stdLogger);
         Utils.execCommand(command, Main.stdLogger, Main.errLogger);
+        return outDir;
     }
 }
