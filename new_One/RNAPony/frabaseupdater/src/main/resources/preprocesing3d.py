@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from timeit import default_timer as timer
 import sys
+import os
 
 import pandas as pd
 import gemmi
@@ -457,7 +458,12 @@ def preprocess_structure(structure3d_orig: bin, structure3d_orig_filename: str,
         #Dodaje na koncu TER w plikach .pdb w cif nie trzeba
         structure3d_validated_str = prevalidate_structure3d(structure3d_orig, structure3d_output_ext, logger)
         #wczytuje cif lub pdb
-        structure3d_orig = parse_structure3d(structure3d_validated_str, structure3d_orig_filename, logger)
+        try:
+            structure3d_orig = parse_structure3d(structure3d_validated_str, structure3d_orig_filename, logger)
+        except RnaspiderUserError as e:
+            last = structure3d_orig_filename.rfind(os.path.sep)
+            print(f"PrintMsg:[{structure3d_orig_filename[last + 1:]}] - wrong extension. .cif is required")
+            sys.exit(0)
         warn_messages = []
 
         logger = main_logger.getChild(f"[{structure3d_orig_filename}] - preprocessing")
@@ -475,10 +481,19 @@ def preprocess_structure(structure3d_orig: bin, structure3d_orig_filename: str,
             structures_splitted = split_3d_structure(structure3d_orig)
 
         #update_task_stage(request_id, task_nr, Stage.FILTERING)
+        correct_models = []
         for task_warn_messages, structure_splitted in zip(warn_messages, structures_splitted):
-            preproc_warn_messages = preprocess_structure3d(structure_splitted, dict_rna_nonstandard_residues,
-                                                            split_policy, logger)
-            task_warn_messages.extend(preproc_warn_messages)
+            try:
+                preproc_warn_messages = preprocess_structure3d(structure_splitted, dict_rna_nonstandard_residues,
+                                                                split_policy, logger)
+                task_warn_messages.extend(preproc_warn_messages)
+                correct_models.append(True)
+            except RnaspiderUserError as e:
+                last = structure3d_orig_filename.rfind(os.path.sep)
+                print(f"PrintMsg:[{structure3d_orig_filename[last + 1:]}] - for model {structure_splitted[0].name} " +
+                                                                "there is no strands after preprocessing available.")
+                correct_models.append(False)
+
         # structures_splitted_strings to poprawny plik .cif lub .pdb
         structures_splitted_strings = [structure_to_string(structure_splitted, stem, structure3d_output_ext)
                                         for structure_splitted in structures_splitted]
@@ -502,10 +517,11 @@ def preprocess_structure(structure3d_orig: bin, structure3d_orig_filename: str,
                                 structures_splitted_names]"""
         structures3d_paths = [Path(Path(out_path) / structure3d_filename) for structure3d_filename in
                                 structures_splitted_names]
-        for structure3d_path, structures_splitted_string in zip(structures3d_paths,
-                                                                structures_splitted_strings):
-            print("saving")
-            structure3d_path.write_text(structures_splitted_string)
+        for i, (structure3d_path, structures_splitted_string) in enumerate(zip(structures3d_paths,
+                                                                structures_splitted_strings)):
+            #print("saving")
+            if correct_models[i] == True:
+                structure3d_path.write_text(structures_splitted_string)
 
         #dla plików .dot
         """all_gap_indices = [find_gap_indices(structure) for structure in structures_splitted]

@@ -55,8 +55,13 @@ public class Main {
 
     public static void main(String[] args){
         PropertiesReader.loadProperties(args);
+        WorkSubmitter submitter = new WorkSubmitter(2000);// 2 seconds
+        new Thread(submitter).start();
         DBUpdater updater = new DBUpdater();
         Path downloadDir = updater.downloadNewStructures();
-        updater.updateDB(downloadDir);
+        submitter.setDownloading(false);
+        //updater.updateDB(downloadDir);
+        Main.verboseInfo(Preprocessor.getFilesWithAllModelsEmptyNo().get() + " files have 0 models with strands" +
+                "available to process.\n" + Worker.getProcessedModels() + " models were processed.", 1);
     }
 }
