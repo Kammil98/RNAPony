@@ -2,6 +2,7 @@ package updater;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import models.CifFile;
 import models.DBrecord;
 import models.DotFile;
 import utils.Utils;
@@ -9,6 +10,8 @@ import utils.Utils;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -23,6 +26,13 @@ public class Worker implements Callable<Path> {
     private static final AtomicInteger processedFiles = new AtomicInteger();
     @Getter
     private static final AtomicInteger processedModels = new AtomicInteger();
+
+    @Getter
+    private static final Path oldFilesDir = Main.frabaseDir.resolve("oldFiles");
+
+    static {
+        Utils.createDirIfNotExist(oldFilesDir.toFile(), false, Main.stdLogger, Main.errLogger);
+    }
 
     /**
      * Check weather given string contains characters different,
@@ -62,11 +72,12 @@ public class Worker implements Callable<Path> {
     /**
      * Compute all records of RNAfrabase based on file with 3D representation of structure.
      *
-     * @param filePath path to file with structure with all its models.
+     * @param filePath path to unzipped file with structure with all its models.
      * @return list of records, which represents models
      *          from file with 3D structure of RNA.
      */
     protected ArrayList<DBrecord> computeStructure(Path filePath){
+        String fileName = filePath.getFileName().toString();
         ArrayList<DBrecord> records = new ArrayList<>();
         DBrecord record;
         Path preprocessedFileDir;
@@ -82,7 +93,25 @@ public class Worker implements Callable<Path> {
             if(record != null)
                 records.add(record);
         }
+        addToUpdatedStrucList(records, fileName.substring(0, fileName.length() - 4));//without ".cif"
         return records;
+    }
+
+    /**
+     * Add to list all files with ids and ids of its models,
+     * to check later which one is new, and which one to delete
+     *
+     * @param records all records representing models of one file
+     */
+    private void addToUpdatedStrucList(ArrayList<DBrecord> records, String id){
+        int fileNo = 0;
+        Integer [] models;
+        models = new Integer[records.size()];
+        for(DBrecord record: records){
+            models[fileNo] = record.getModelNo();
+            fileNo++;
+        }
+        DBUpdater.updatedFiles.add(new CifFile(id, models));
     }
 
     private void unGzipFile(Path compressedFile, Path decompressedFile) {
@@ -98,31 +127,61 @@ public class Worker implements Callable<Path> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(!filePath.toFile().renameTo(oldFilesDir.resolve(filePath.getFileName()).toFile())) {
+            if (!filePath.toFile().delete()) {
+                filePath.toFile().deleteOnExit();
+            }
+        }
+    }
+
+    private boolean isUnchanged(Path compressedFile){
+        Path oldCompressedFile = oldFilesDir.resolve(compressedFile.getFileName());
+        String command = "diff " + compressedFile + " " + oldCompressedFile;
+        Utils.createDirIfNotExist(oldCompressedFile.getParent().toFile(), true, Main.stdLogger, Main.errLogger);
+        if(!oldCompressedFile.toFile().exists())
+            return false;
+        InputStream result = Utils.execCommand(command, Main.stdLogger, Main.errLogger);
+        boolean isUnchanged;
+        try {
+            isUnchanged = (new String(result.readAllBytes(), StandardCharsets.UTF_8).length() == 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            isUnchanged = false;
+        }
+        return isUnchanged;
     }
 
     public void processFile(Path filePath){
         String unpackedFileName, fileName = filePath.getFileName().toString();
         Path unpackedFilePath;
-        long start, finish;
+        long start;
         start = System.currentTimeMillis();
         unpackedFileName = fileName.substring(0, fileName.length() - 3);
         unpackedFilePath = filePath.getParent()
                 .resolve(String.valueOf(Thread.currentThread().getId()))
                 .resolve(unpackedFileName);
         Main.verboseInfo("Start processing " +  fileName + ". " +
-                processedFiles.get() + "/" +  DBUpdater.getFileNo().get() + " files processed. " +
-                WorkSubmitter.getFileNo().get() + "/" + DBUpdater.getFileNo().get() + "files downloaded", 2);
-        unGzipFile(filePath, unpackedFilePath);
-        if(!filePath.toFile().delete()){
-            filePath.toFile().deleteOnExit();
+                processedFiles.get() + "/" +  DBDownloader.getFileNo().get() + " files processed. " +
+                WorkSubmitter.getFileNo().get() + "/" + DBDownloader.getFileNo().get() + "files downloaded", 2);
+        if(isUnchanged(filePath)){
+            cleanUp(start, filePath);
+            Main.verboseInfo(filePath.getFileName() + " is unchanged!!!", 3);
+            return;
         }
-        DBUpdater.records.addAll(computeStructure(unpackedFilePath));
-        DBUpdater.saveRecordsToFile();
-        if(!unpackedFilePath.toFile().delete()){
-            unpackedFilePath.toFile().deleteOnExit();
+        unGzipFile(filePath, unpackedFilePath);
+        DBDownloader.records.addAll(computeStructure(unpackedFilePath));
+        DBDownloader.saveRecordsToFile();
+        cleanUp(start, unpackedFilePath);
+    }
+
+    public void cleanUp(Long start, Path filepath){
+        long finish;
+        if(!filepath.toFile().delete()){
+            System.out.println("couldn't move " + filepath.getFileName());
+            filepath.toFile().deleteOnExit();
         }
         finish = System.currentTimeMillis();
-        Main.verboseInfo("Time for file " + fileName + ": " + (finish - start), 3);
+        Main.verboseInfo("Time for file " + filePath.getFileName() + ": " + (finish - start), 3);
         processedFiles.incrementAndGet();
     }
 

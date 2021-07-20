@@ -71,7 +71,7 @@ public class WorkSubmitter implements Runnable{
 
         //remove files, which was modified less than 2 seconds ago, because they can be still downloaded
         currFileList.removeIf(fileName ->{
-            File file = DBUpdater.downloadPath.resolve(fileName).toFile();
+            File file = DBDownloader.downloadPath.resolve(fileName).toFile();
             long difference = (System.currentTimeMillis() - file.lastModified());
             if(difference <= 2000){
                 isAlive = true;//needed next iteration in case of ended download
@@ -142,8 +142,9 @@ public class WorkSubmitter implements Runnable{
 
     @Override
     public void run() {
+        fileNo.set(0);
         Main.verboseInfo("Computing records.", 1);
-        DBUpdater.prepareDBFile();
+        DBDownloader.prepareDBFile();
         while (isAlive){
             //wait some time, till new files will be downloaded
             try {
@@ -153,7 +154,7 @@ public class WorkSubmitter implements Runnable{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            updateDB(DBUpdater.downloadPath);
+            updateDB(DBDownloader.downloadPath);
         }
         timer.cancel();
         executor.shutdown();
@@ -165,7 +166,7 @@ public class WorkSubmitter implements Runnable{
                 e.printStackTrace();
             }
         });
-        Main.stdLogger.info("records to save: " + DBUpdater.records.size());
-        DBUpdater.saveRecordsToFile(true);
+        Main.stdLogger.info("records to save: " + DBDownloader.records.size());
+        DBDownloader.saveRecordsToFile(true);
     }
 }

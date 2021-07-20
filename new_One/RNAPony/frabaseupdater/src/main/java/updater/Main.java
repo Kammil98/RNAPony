@@ -4,7 +4,9 @@ import com.beust.jcommander.Parameter;
 import lombok.Getter;
 import utils.Utils;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,15 +55,34 @@ public class Main {
         Utils.changeLogHandler(stdLogger);
     }
 
+    private static void updateDB(){
+        try(DBUpdater updater = new DBUpdater()) {
+            updater.addOrUpdateNewRecords(frabaseDir.resolve("DBrecords.txt"));
+            updater.deleteOldRecords();
+        } catch (SQLException throwables) {
+            Main.verboseInfo("Couldn't connect to database: ", 1);
+            Main.errLogger.severe("Couldn't connect to database: ");
+            System.exit(-1);
+        }
+    }
+
     public static void main(String[] args){
         PropertiesReader.loadProperties(args);
         WorkSubmitter submitter = new WorkSubmitter(2000);// 2 seconds
-        new Thread(submitter).start();
-        DBUpdater updater = new DBUpdater();
-        Path downloadDir = updater.downloadNewStructures();
-        submitter.setDownloading(false);
-        //updater.updateDB(downloadDir);
-        Main.verboseInfo(Preprocessor.getFilesWithAllModelsEmptyNo().get() + " files have 0 models with strands" +
+        Thread submitterThread = new Thread(submitter);
+        submitterThread.start();
+        DBDownloader loader = new DBDownloader();
+        Path downloadDir = loader.downloadNewStructures();
+        submitter.setDownloading(false);//notify submitter, that downloading stopped
+        //loader.updateDB(downloadDir);
+        Main.verboseInfo(Preprocessor.getFilesWithAllModelsEmptyNo().get() + " files have 0 models with strands " +
                 "available to process.\n" + Worker.getProcessedModels() + " models were processed.", 1);
+        try {
+            submitterThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Main.verboseInfo("Updating database", 1);
+        updateDB();
     }
 }

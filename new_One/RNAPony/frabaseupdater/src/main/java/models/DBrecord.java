@@ -1,5 +1,6 @@
 package models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,13 +11,13 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.*;
 
-@Getter @Setter @NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class DBrecord {
 
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public static final String CHARS_BP2 = ")]}>abcdefghijklmnopqrstuvwxyz";
 
-    String iD;
+    String id;
     int modelNo;
     String chain;
     double resol;
@@ -136,7 +137,7 @@ public class DBrecord {
      */
     public void computeRecord(final DotFile dotFile, final String filename){
         String id = filename.substring(0, 4);
-        setID(id);
+        setId(id);
         setModelNo(Integer.parseInt(
                 filename.substring(5, filename.lastIndexOf('.'))
         ));
@@ -150,6 +151,6 @@ public class DBrecord {
 
     @Override
     public String toString() {
-        return iD + " " + modelNo + " " + chain + " " + resol + " " + seq + " " + dot + " " + dotIntervals + " " + maxOrder;
+        return id + " " + modelNo + " " + chain + " " + resol + " " + seq + " " + dot + " " + dotIntervals + " " + maxOrder;
     }
 }

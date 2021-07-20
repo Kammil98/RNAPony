@@ -1,179 +1,206 @@
 package updater;
 
-import lombok.Getter;
+import models.CifFile;
 import models.DBrecord;
-import utils.Utils;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.sql.*;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class DBUpdater {
+public class DBUpdater implements Closeable {
 
-    public static final Path downloadPath = Main.frabaseDir.resolve("3DStructures");
-    public static final ConcurrentLinkedQueue<DBrecord> records = new ConcurrentLinkedQueue<>();
-    @Getter
-    private static AtomicInteger fileNo = new AtomicInteger();
-    private static final Object synchronizer = new Object();
+    private final Connection conn;
+    public static final ConcurrentLinkedQueue<CifFile> updatedFiles = new ConcurrentLinkedQueue<>();
+    private final String table = "rnapony";
+    public DBUpdater() throws SQLException {
+        String jdbcUrl = "jdbc:postgresql://localhost:5432/rnaponydb";
+        String user = "rnaponyadmin";
+        String pass = "rnapony";
+        conn = DriverManager.getConnection(jdbcUrl, user, pass);
+        Statement stmt = conn.createStatement();
 
-    /**
-     * Download file with new structures in PDB.
-     * @return Path to downloaded file.
-     */
-    public Path downloadChangeList(){
-        File outDir = Main.frabaseDir.toFile();
-        Path outPath = Main.frabaseDir.resolve("pdb_entry_type.txt");
-        Utils.createDirIfNotExist(outDir, Main.stdLogger);
-
-        //-O stands for overwrite, -P stands for directory
-        Utils.execCommand("wget -P " +
-                        outDir.getAbsolutePath() +
-                        " https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt -O " +
-                        outPath,
-                false,
-                Main.stdLogger,
-                Main.errLogger);
-        return outPath;
+        String CreateSql = "Create Table IF NOT EXISTS " + table + "(" +
+                "id varchar(4), " +
+                "modelNo int, " +
+                "chain text NOT NULL, " +
+                "resol numeric(5,2) NOT NULL," +
+                "seq text NOT NULL," +
+                "dot text NOT NULL," +
+                "dotIntervals text NOT NULL," +
+                "maxOrder int NOT NULL," +
+                "PRIMARY KEY (id, modelNo) )";
+        stmt.executeUpdate(CreateSql);
+        stmt.close();
     }
 
-    /**
-     * Download file with resolution of new structures in PDB.
-     * @return Path to downloaded file.
-     */
-    public Path downloadResolList(){
-        Path outPath = Main.frabaseDir.resolve("resolu.idx");
-        //-O stands for overwrite, -P stands for directory
-        Utils.execCommand("wget -P " +
-                        Main.frabaseDir +
-                        " https://ftp.wwpdb.org/pub/pdb/derived_data/index/resolu.idx -O " +
-                        outPath,
-                false,
-                Main.stdLogger,
-                Main.errLogger);
-        return outPath;
+    private DBrecord readRecord(String line){
+        DBrecord record;
+        StringTokenizer tokenizer = new StringTokenizer(line, " ");
+        record = new DBrecord(tokenizer.nextToken(),
+                Integer.parseInt(tokenizer.nextToken()),
+                tokenizer.nextToken(),
+                Double.parseDouble(tokenizer.nextToken()),
+                tokenizer.nextToken(),
+                tokenizer.nextToken(),
+                tokenizer.nextToken(),
+                Integer.parseInt(tokenizer.nextToken()));
+        return record;
     }
 
+    private void handleSqlError(SQLException e){
+        while(e!= null){
+            Main.verboseInfo("Couldn't execute sql command: \n" + e.getSQLState() + "\n" + e.getErrorCode() +
+                    "\n" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()), 1);
+            Main.errLogger.severe("Couldn't execute sql command: \n" + e.getSQLState() + "\n" + e.getErrorCode() +
+                    "\n" + e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+            e = e.getNextException();
+        }
+    }
 
-    public Path getNewStructuresList(){
-        Path changedIdListPath = Path.of(
-                Objects.requireNonNull(this.getClass().getResource("/")).getPath(),
-                "changedIds.txt");
-        Path changedListPath = downloadChangeList();
-        String line, id, type;
-        StringTokenizer structure;
-        int counter = 0;
+    private void addRecordToBatch(DBrecord record, PreparedStatement pstmt) throws SQLException {
+        pstmt.setString(1, record.getId());
+        pstmt.setInt(2, record.getModelNo());
+        pstmt.setString(3, record.getChain());
+        pstmt.setDouble(4, record.getResol());
+        pstmt.setString(5, record.getSeq());
+        pstmt.setString(6, record.getDot());
+        pstmt.setString(7, record.getDotIntervals());
+        pstmt.setInt(8, record.getMaxOrder());
+        pstmt.addBatch();
+    }
 
-        Main.verboseInfo("Downloading list of resolutions of new structures.", 2);
-        downloadResolList();
-        Main.verboseInfo("Filtering out DNA structures.", 2);
-        try(Scanner structuresReader = new Scanner(changedListPath.toFile());
-            BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(changedIdListPath.toString())))){
-            //uncomment code below, when testing on real list of files
-            while (structuresReader.hasNextLine()){
-                line = structuresReader.nextLine();
-                structure = new StringTokenizer(line, " \t");
-                id = structure.nextToken();
-                type = structure.nextToken();
-                if(type.equals("nuc") || type.equals("prot-nuc")){
-                    bw.write(id + ",");
-                    counter++;
+    private void addRecordsToDB(ArrayList<DBrecord> records){
+        String batchCommand = "INSERT INTO " + table +
+                "  (id, modelNo, chain, resol, seq, dot, dotIntervals, maxOrder) " +
+                "VALUES  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id, modelNo) DO UPDATE SET " +
+                "chain=excluded.chain, " +
+                "resol=excluded.resol, " +
+                "seq=excluded.seq, " +
+                "dot=excluded.dot, " +
+                "dotIntervals=excluded.dotIntervals, " +
+                "maxorder=excluded.maxorder;";
+        try (PreparedStatement pstmt = conn.prepareStatement(batchCommand)){
+            conn.setAutoCommit(false);
+            for(DBrecord record: records)
+                addRecordToBatch(record, pstmt);
+            pstmt.executeBatch();
+            conn.commit();
+            conn.setAutoCommit(true);
+        } catch (SQLException throwables) {
+            handleSqlError(throwables);
+        }
+    }
+
+    public void addOrUpdateNewRecords(Path newRecordsPath){
+        ArrayList<DBrecord> records = new ArrayList<>(100);
+        try(Scanner recordsReader = new Scanner(newRecordsPath.toFile())){
+            while (recordsReader.hasNextLine()){
+                records.add(readRecord(recordsReader.nextLine()));
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        addRecordsToDB(records);
+    }
+
+    private ArrayList<CifFile> getArrayOfModelsToDelete(ResultSet structures) throws SQLException {
+        ArrayList<CifFile> modelsToDelete = new ArrayList<>();
+        String id;
+        Array modelsNoHndlr;
+        HashSet<Integer> modelsNo;
+        while (structures.next()){
+            id = structures.getString(1);
+            modelsNoHndlr = structures.getArray(2);
+            modelsNo = new HashSet<>(Arrays.asList((Integer[]) modelsNoHndlr.getArray()));
+            for(CifFile newStructure: updatedFiles){
+                if(newStructure.getId().equals(id)){
+                    modelsNo.removeAll(Set.of(newStructure.getModels()));
+                    modelsToDelete.add(new CifFile(id, modelsNo.toArray(new Integer[]{})));
+                    break;
                 }
             }
-            //bw.write("100d,1ekd,1et4,1ekz,1elh,1eqq");
-        } catch (FileNotFoundException e) {
-            Main.errLogger.severe("Couldn't find file: resolu.idx");
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        fileNo.set(counter);
-        Main.verboseInfo(counter + " RNA structures will be downloaded. " +
-                "Keep calm. It will take some time.", 1);
-        return changedIdListPath;
+        return modelsToDelete;
     }
 
-    public Path downloadNewStructures(){
-        String command;
-        boolean displayInfo = (Main.getVerboseMode() >= 2);
-        Utils.createDirIfNotExist(downloadPath.toFile(), Main.stdLogger);
-
-        Main.verboseInfo("Downloading list of new structures.", 2);
-        Path newStrucListPath = getNewStructuresList();
-        Main.verboseInfo("Downloading new nuc and prot-nuc structures.", 1);
-        Path downloadScriptPath = Path.of(
-                Objects.requireNonNull(getClass().getResource("/batch_download.sh")).getPath());
-        command = downloadScriptPath + " -f " + newStrucListPath + " -o " + downloadPath.toAbsolutePath() + " -c";
-        Utils.execCommand(command, displayInfo, Main.stdLogger, Main.errLogger);
-        return downloadPath;
+    private  ArrayList<CifFile> getModelsToDelete(){
+        ArrayList<CifFile> modelsToDelete = null;
+        StringBuilder sqlQuerry = new StringBuilder("SELECT id, array_agg(modelNo) AS models FROM " + table +
+                " where id IN ( ");
+        ResultSet resultSet;
+        for(CifFile file: updatedFiles)
+            sqlQuerry.append("'").append(file.getId()).append("',");
+        sqlQuerry.deleteCharAt(sqlQuerry.length() - 1);
+        sqlQuerry.append(" ) GROUP BY id");
+        try(Statement stmt = conn.createStatement()) {
+            resultSet = stmt.executeQuery(sqlQuerry.toString());
+            modelsToDelete = getArrayOfModelsToDelete(resultSet);
+        } catch (SQLException throwables) {
+            handleSqlError(throwables);
+        }
+        return modelsToDelete;
     }
 
-    public static void saveRecordsToFile(ArrayList<DBrecord> records){
-        try(BufferedWriter bw = new BufferedWriter(
-                new FileWriter(Main.frabaseDir.resolve("DBrecords.txt").toString(), true))) {
-            for(DBrecord record: records){
-                bw.write(record + "\n");
+    public int deleteOldRecords(){
+        String sqlCommand2 = "DELETE FROM " + table + " WHERE id = ? AND modelNo = ?";
+        int affectedrows = 0;
+        ArrayList<CifFile> modelsToDelete = getModelsToDelete();
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlCommand2)) {
+            conn.setAutoCommit(false);
+            for(CifFile structure: modelsToDelete){
+                for(Integer modelNo: structure.getModels()){
+                    pstmt.setString(1, structure.getId());
+                    pstmt.setInt(2, modelNo);
+                    pstmt.addBatch();
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            pstmt.executeBatch();
+            conn.commit();
+            conn.setAutoCommit(true);
+        } catch (SQLException ex) {
+            handleSqlError(ex);
+        }
+        return affectedrows;
+    }
+
+    public void updateRecords(ArrayList<DBrecord> records){
+        String batchCommand = "UPDATE " + table + " SET chain = ?, resol = ?, seq = ?, " +
+                "dot = ?, dotIntervals = ?, maxOrder = ? WHERE id = ? AND modelNo = ?;";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(batchCommand)){
+            conn.setAutoCommit(false);
+            records.forEach(record ->{
+                try {
+                    preparedStatement.setString(1, record.getChain());
+                    preparedStatement.setDouble(2, record.getResol());
+                    preparedStatement.setString(3, record.getSeq());
+                    preparedStatement.setString(4, record.getSeq());
+                    preparedStatement.setString(5, record.getDotIntervals());
+                    preparedStatement.setInt(6, record.getMaxOrder());
+                    preparedStatement.setString(7, record.getId());
+                    preparedStatement.setInt(8, record.getModelNo());
+                    preparedStatement.addBatch();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            });
+            int[] updateCounts = preparedStatement.executeBatch();
+            System.out.println(Arrays.toString(updateCounts));
+            conn.commit();
+            conn.setAutoCommit(true);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 
-    /**
-     * Delete file with database from old update and create new one.
-     */
-    public static void prepareDBFile(){
-        File outFile = Path.of(Main.frabaseDir.toString(), "DBrecords.txt").toFile();
+    @Override
+    public void close() {
         try {
-            outFile.delete();
-            if(!outFile.createNewFile()){
-                Main.verboseInfo("Couldn't access file:\n" + outFile.getAbsolutePath(), 1);
-                Main.errLogger.severe("Couldn't access file:\n" + outFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            conn.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-    }
-
-    public static void saveRecordsToFile(boolean forceSave){
-        synchronized (synchronizer) {
-            ArrayList<DBrecord> handler;
-            if (records.size() > 1000 || forceSave) {
-                handler = new ArrayList<>(records);
-                saveRecordsToFile(handler);
-                records.removeAll(handler);
-            }
-        }
-    }
-
-    public static void saveRecordsToFile(){
-        DBUpdater.saveRecordsToFile(false);
-    }
-
-    /**
-     * Compute records for all 3D structures under
-     * given directory
-     * @param dir directory with 3D structures
-     */
-    public void updateDBAfterDownload(final Path dir){
-        List<Callable<Path>> callables = new ArrayList<>();
-        Main.verboseInfo("Computing records.", 1);
-        FilenameFilter filter = (dir1, name) -> name.endsWith(".gz");
-        String[] fileList = Objects.requireNonNull(dir.toFile().list(filter));
-        ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
-
-        prepareDBFile();
-        fileNo.set(fileList.length);
-        for (String file : fileList) {
-            callables.add(new Worker(dir.resolve(file)));
-        }
-        try {
-            executor.invokeAll(callables);
-            executor.shutdown();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        DBUpdater.saveRecordsToFile(true);
     }
 }
