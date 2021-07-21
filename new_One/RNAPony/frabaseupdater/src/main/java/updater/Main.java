@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,9 +57,12 @@ public class Main {
     }
 
     private static void updateDB(){
+        int affectedRows;
         try(DBUpdater updater = new DBUpdater()) {
-            updater.addOrUpdateNewRecords(frabaseDir.resolve("DBrecords.txt"));
-            updater.deleteOldRecords();
+            affectedRows = updater.addOrUpdateNewRecords(frabaseDir.resolve("DBrecords.txt"));
+            Main.verboseInfo(affectedRows + " rows were added or updated.", 1);
+            affectedRows = updater.deleteOldRecords();
+            Main.verboseInfo(affectedRows + " rows were deleted.", 1);
         } catch (SQLException throwables) {
             Main.verboseInfo("Couldn't connect to database: ", 1);
             Main.errLogger.severe("Couldn't connect to database: ");
@@ -68,6 +72,7 @@ public class Main {
 
     public static void main(String[] args){
         PropertiesReader.loadProperties(args);
+        DBDownloader.prepareFiles();
         WorkSubmitter submitter = new WorkSubmitter(2000);// 2 seconds
         Thread submitterThread = new Thread(submitter);
         submitterThread.start();

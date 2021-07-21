@@ -16,9 +16,11 @@ public class WorkSubmitter implements Runnable{
     private final Timer timer;
     @Getter(AccessLevel.PACKAGE)
     private static final AtomicInteger fileNo = new AtomicInteger();
-    private HashSet<String> files = new HashSet<>(1000);
-    private ArrayList<Future<Path>> tasks = new ArrayList<>(200);
+    private final HashSet<String> files = new HashSet<>(1000);
+    private final ArrayList<Future<Path>> tasks = new ArrayList<>(200);
     private final ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
+    @Getter(AccessLevel.PACKAGE)
+    private static final AtomicInteger recordsNo = new AtomicInteger();
     @Setter
     private boolean isDownloading = true;
     private boolean isAlive = true;
@@ -143,8 +145,8 @@ public class WorkSubmitter implements Runnable{
     @Override
     public void run() {
         fileNo.set(0);
+        recordsNo.set(0);
         Main.verboseInfo("Computing records.", 1);
-        DBDownloader.prepareDBFile();
         while (isAlive){
             //wait some time, till new files will be downloaded
             try {
@@ -167,6 +169,6 @@ public class WorkSubmitter implements Runnable{
             }
         });
         Main.stdLogger.info("records to save: " + DBDownloader.records.size());
-        DBDownloader.saveRecordsToFile(true);
+        DBDownloader.saveQueueToFile(DBDownloader.records, true, DBDownloader.newRecordsPath);
     }
 }

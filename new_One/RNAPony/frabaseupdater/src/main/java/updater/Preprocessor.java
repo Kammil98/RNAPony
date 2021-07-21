@@ -20,11 +20,13 @@ public class Preprocessor {
     public static final Path preprocessOutDir = Path.of("frabase_update", "RNApony_cif_files");
     @Getter
     private static final AtomicInteger filesWithAllModelsEmptyNo = new AtomicInteger();
-    @Setter
+    @Setter @Getter
     @Parameter(names = {"--type", "-t"}, converter = PreprocessTypeConverter.class,
             description = "If equals all, then all models in file are processed." +
                     "If equals first, then only first model in file is processed. Possible types are: all, first.")
-    private static PreprocessType preprocessType = PreprocessType.ALL;
+    private static PreprocessType preprocessType = null;
+    @Getter @Setter
+    private static PreprocessType lastPreprocessType;
     public Path extractRNA(final Path filePath){
         URL preprocesing3dUrl = getClass().getResource("/preprocesing3d.py");
         Path outDir = preprocessOutDir.resolve(String.valueOf(Thread.currentThread().getId()));

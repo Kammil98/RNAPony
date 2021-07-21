@@ -1,6 +1,6 @@
 package updater;
 
-import models.CifFile;
+import models.Structure;
 import models.DBrecord;
 
 import java.io.Closeable;
@@ -13,7 +13,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DBUpdater implements Closeable {
 
     private final Connection conn;
-    public static final ConcurrentLinkedQueue<CifFile> updatedFiles = new ConcurrentLinkedQueue<>();
+    public static final ConcurrentLinkedQueue<Structure> updatedFiles = new ConcurrentLinkedQueue<>();
+    public static final Path updatedStructuresPath = Main.frabaseDir.resolve("UpdatedStructures.txt");
     private final String table = "rnapony";
     public DBUpdater() throws SQLException {
         String jdbcUrl = "jdbc:postgresql://localhost:5432/rnaponydb";
@@ -36,7 +37,7 @@ public class DBUpdater implements Closeable {
         stmt.close();
     }
 
-    private DBrecord readRecord(String line){
+    DBrecord readRecord(String line){
         DBrecord record;
         StringTokenizer tokenizer = new StringTokenizer(line, " ");
         record = new DBrecord(tokenizer.nextToken(),
@@ -48,6 +49,26 @@ public class DBUpdater implements Closeable {
                 tokenizer.nextToken(),
                 Integer.parseInt(tokenizer.nextToken()));
         return record;
+    }
+
+    Structure readStructure(String line){
+        int[] models;
+        int tokenNo = 0;
+        StringTokenizer tokenizer = new StringTokenizer(line, " ");
+        String id = tokenizer.nextToken();
+        String token = tokenizer.nextToken();
+        if(token.equals("null")){
+            return new Structure(id, null);
+        }
+        token = line.substring(line.indexOf('[') + 1, line.length() - 1);
+        tokenizer = new StringTokenizer(token, ",");
+        models = new int[tokenizer.countTokens()];
+        while (tokenizer.hasMoreTokens()){
+            token = tokenizer.nextToken().stripLeading();
+            models[tokenNo] = Integer.parseInt(token);
+            tokenNo++;
+        }
+        return new Structure(id, models);
     }
 
     private void handleSqlError(SQLException e){
@@ -72,7 +93,9 @@ public class DBUpdater implements Closeable {
         pstmt.addBatch();
     }
 
-    private void addRecordsToDB(ArrayList<DBrecord> records){
+    private int addRecordsToDB(ArrayList<DBrecord> records){
+        int affectedRows = 0;
+        int[] affectedRowsList;
         String batchCommand = "INSERT INTO " + table +
                 "  (id, modelNo, chain, resol, seq, dot, dotIntervals, maxOrder) " +
                 "VALUES  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id, modelNo) DO UPDATE SET " +
@@ -86,113 +109,111 @@ public class DBUpdater implements Closeable {
             conn.setAutoCommit(false);
             for(DBrecord record: records)
                 addRecordToBatch(record, pstmt);
-            pstmt.executeBatch();
+            affectedRowsList = pstmt.executeBatch();
+            for (int val : affectedRowsList)
+                affectedRows += val;
             conn.commit();
             conn.setAutoCommit(true);
         } catch (SQLException throwables) {
             handleSqlError(throwables);
         }
+        return affectedRows;
     }
 
-    public void addOrUpdateNewRecords(Path newRecordsPath){
-        ArrayList<DBrecord> records = new ArrayList<>(100);
+    public int addOrUpdateNewRecords(Path newRecordsPath){
+        int affectedRows = 0;
+        ArrayList<DBrecord> records = new ArrayList<>(1000);
         try(Scanner recordsReader = new Scanner(newRecordsPath.toFile())){
             while (recordsReader.hasNextLine()){
                 records.add(readRecord(recordsReader.nextLine()));
+                if(records.size() == 1000) {//to save memory  - can't load whole database at once
+                    affectedRows += addRecordsToDB(records);
+                    records.clear();
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        addRecordsToDB(records);
+        if(!records.isEmpty())
+            affectedRows += addRecordsToDB(records);
+        return affectedRows;
     }
 
-    private ArrayList<CifFile> getArrayOfModelsToDelete(ResultSet structures) throws SQLException {
-        ArrayList<CifFile> modelsToDelete = new ArrayList<>();
-        String id;
-        Array modelsNoHndlr;
-        HashSet<Integer> modelsNo;
-        while (structures.next()){
-            id = structures.getString(1);
-            modelsNoHndlr = structures.getArray(2);
-            modelsNo = new HashSet<>(Arrays.asList((Integer[]) modelsNoHndlr.getArray()));
-            for(CifFile newStructure: updatedFiles){
-                if(newStructure.getId().equals(id)){
-                    modelsNo.removeAll(Set.of(newStructure.getModels()));
-                    modelsToDelete.add(new CifFile(id, modelsNo.toArray(new Integer[]{})));
-                    break;
-                }
-            }
+    public void deleteManuallyAddedRecords(){
+        //TODO delete all records of structures, which arrived in db by adding
+        // them manually or just not by this program (delete all, which are not in oldFiles)
+    }
+
+    private void addDeletionToBatch(PreparedStatement pstmt, Structure structure) throws SQLException {
+        int[] models;
+        models = structure.getModels();
+        pstmt.setString(1, structure.getId());
+        if((models == null) || (models.length == 0)){
+            pstmt.setBoolean(2, true);
+            //value -1 inside "NOT IN" doesn't matter because it's connected by OR with "true" value
+            for(int i = 0; i < Structure.getMaxModelsNo(); i++)
+                pstmt.setInt(i + 3, -1);
         }
-        return modelsToDelete;
-    }
-
-    private  ArrayList<CifFile> getModelsToDelete(){
-        ArrayList<CifFile> modelsToDelete = null;
-        StringBuilder sqlQuerry = new StringBuilder("SELECT id, array_agg(modelNo) AS models FROM " + table +
-                " where id IN ( ");
-        ResultSet resultSet;
-        for(CifFile file: updatedFiles)
-            sqlQuerry.append("'").append(file.getId()).append("',");
-        sqlQuerry.deleteCharAt(sqlQuerry.length() - 1);
-        sqlQuerry.append(" ) GROUP BY id");
-        try(Statement stmt = conn.createStatement()) {
-            resultSet = stmt.executeQuery(sqlQuerry.toString());
-            modelsToDelete = getArrayOfModelsToDelete(resultSet);
-        } catch (SQLException throwables) {
-            handleSqlError(throwables);
+        else{
+            pstmt.setBoolean(2, false);
+            for(int i = 0; i < models.length; i++)
+                pstmt.setInt(i + 3, models[i]);
+            //it's just for fulfill pstmt with repeating values. This values will be deleted by optimizer
+            //before query will be executed
+            for(int i = models.length; i < Structure.getMaxModelsNo(); i++)
+                pstmt.setInt(i + 3, models[0]);
         }
-        return modelsToDelete;
+        pstmt.addBatch();
     }
 
-    public int deleteOldRecords(){
-        String sqlCommand2 = "DELETE FROM " + table + " WHERE id = ? AND modelNo = ?";
-        int affectedrows = 0;
-        ArrayList<CifFile> modelsToDelete = getModelsToDelete();
-        try (PreparedStatement pstmt = conn.prepareStatement(sqlCommand2)) {
+    private String getDeleteQuery(){
+        StringBuilder sqlQuery = new StringBuilder("DELETE FROM " + table + " WHERE id = ? AND " +
+                "(? OR modelNo NOT IN ( ");
+        sqlQuery.append("?,".repeat(Math.max(0, Structure.getMaxModelsNo())));
+        sqlQuery.deleteCharAt(sqlQuery.length() - 1);
+        sqlQuery.append(" ) )");
+        return sqlQuery.toString();
+    }
+
+    private int deleteRecordsFromDB(ArrayList<Structure> structures){
+        String sqlQuery = getDeleteQuery();
+        int affectedRows = 0;
+        int[] affectedRowsList;
+        try (PreparedStatement pstmt = conn.prepareStatement(sqlQuery)) {
             conn.setAutoCommit(false);
-            for(CifFile structure: modelsToDelete){
-                for(Integer modelNo: structure.getModels()){
-                    pstmt.setString(1, structure.getId());
-                    pstmt.setInt(2, modelNo);
-                    pstmt.addBatch();
-                }
-            }
-            pstmt.executeBatch();
+            for (Structure structure: structures)
+                addDeletionToBatch(pstmt, structure);
+            affectedRowsList = pstmt.executeBatch();
+            for (int val : affectedRowsList)
+                affectedRows += val;
             conn.commit();
             conn.setAutoCommit(true);
         } catch (SQLException ex) {
             handleSqlError(ex);
         }
-        return affectedrows;
+        return affectedRows;
     }
 
-    public void updateRecords(ArrayList<DBrecord> records){
-        String batchCommand = "UPDATE " + table + " SET chain = ?, resol = ?, seq = ?, " +
-                "dot = ?, dotIntervals = ?, maxOrder = ? WHERE id = ? AND modelNo = ?;";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(batchCommand)){
-            conn.setAutoCommit(false);
-            records.forEach(record ->{
-                try {
-                    preparedStatement.setString(1, record.getChain());
-                    preparedStatement.setDouble(2, record.getResol());
-                    preparedStatement.setString(3, record.getSeq());
-                    preparedStatement.setString(4, record.getSeq());
-                    preparedStatement.setString(5, record.getDotIntervals());
-                    preparedStatement.setInt(6, record.getMaxOrder());
-                    preparedStatement.setString(7, record.getId());
-                    preparedStatement.setInt(8, record.getModelNo());
-                    preparedStatement.addBatch();
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+    public int deleteOldRecords(){
+        int affectedrows = 0;
+        DBDownloader.saveQueueToFile(updatedFiles, true, updatedStructuresPath);
+
+        ArrayList<Structure> structures = new ArrayList<>(1000);
+        try(Scanner structuresReader = new Scanner(updatedStructuresPath.toFile())){
+            while (structuresReader.hasNextLine()){
+                structures.add(readStructure(structuresReader.nextLine()));
+                if(structures.size() == 1000) {//to save memory  - can't load whole database at once
+                    affectedrows += deleteRecordsFromDB(structures);
+                    structures.clear();
                 }
-            });
-            int[] updateCounts = preparedStatement.executeBatch();
-            System.out.println(Arrays.toString(updateCounts));
-            conn.commit();
-            conn.setAutoCommit(true);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
+        if(!structures.isEmpty())
+            affectedrows += deleteRecordsFromDB(structures);
+
+        return affectedrows;
     }
 
     @Override

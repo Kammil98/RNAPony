@@ -2,7 +2,7 @@ package updater;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import models.CifFile;
+import models.Structure;
 import models.DBrecord;
 import models.DotFile;
 import utils.Utils;
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -93,7 +94,7 @@ public class Worker implements Callable<Path> {
             if(record != null)
                 records.add(record);
         }
-        addToUpdatedStrucList(records, fileName.substring(0, fileName.length() - 4));//without ".cif"
+        addToUpdatedStrucList(records, fileName.substring(0, fileName.length() - 4));//fileName without ".cif"
         return records;
     }
 
@@ -105,13 +106,14 @@ public class Worker implements Callable<Path> {
      */
     private void addToUpdatedStrucList(ArrayList<DBrecord> records, String id){
         int fileNo = 0;
-        Integer [] models;
-        models = new Integer[records.size()];
+        int [] models;
+        models = new int[records.size()];
         for(DBrecord record: records){
             models[fileNo] = record.getModelNo();
             fileNo++;
         }
-        DBUpdater.updatedFiles.add(new CifFile(id, models));
+        DBUpdater.updatedFiles.add(new Structure(id, models));
+        DBDownloader.saveQueueToFile(DBUpdater.updatedFiles, DBUpdater.updatedStructuresPath);
     }
 
     private void unGzipFile(Path compressedFile, Path decompressedFile) {
@@ -140,7 +142,8 @@ public class Worker implements Callable<Path> {
         Utils.createDirIfNotExist(oldCompressedFile.getParent().toFile(), true, Main.stdLogger, Main.errLogger);
         if(!oldCompressedFile.toFile().exists())
             return false;
-        InputStream result = Utils.execCommand(command, Main.stdLogger, Main.errLogger);
+        InputStream result = Utils.execCommand(command, false, Main.stdLogger, Main.errLogger,
+                Arrays.asList(0, 1));
         boolean isUnchanged;
         try {
             isUnchanged = (new String(result.readAllBytes(), StandardCharsets.UTF_8).length() == 0);
@@ -162,7 +165,7 @@ public class Worker implements Callable<Path> {
                 .resolve(unpackedFileName);
         Main.verboseInfo("Start processing " +  fileName + ". " +
                 processedFiles.get() + "/" +  DBDownloader.getFileNo().get() + " files processed. " +
-                WorkSubmitter.getFileNo().get() + "/" + DBDownloader.getFileNo().get() + "files downloaded", 2);
+                WorkSubmitter.getFileNo().get() + "/" + DBDownloader.getFileNo().get() + " files downloaded", 2);
         if(isUnchanged(filePath)){
             cleanUp(start, filePath);
             Main.verboseInfo(filePath.getFileName() + " is unchanged!!!", 3);
@@ -170,7 +173,7 @@ public class Worker implements Callable<Path> {
         }
         unGzipFile(filePath, unpackedFilePath);
         DBDownloader.records.addAll(computeStructure(unpackedFilePath));
-        DBDownloader.saveRecordsToFile();
+        DBDownloader.saveQueueToFile(DBDownloader.records, DBDownloader.newRecordsPath);
         cleanUp(start, unpackedFilePath);
     }
 
@@ -186,7 +189,7 @@ public class Worker implements Callable<Path> {
     }
 
     @Override
-    public Path call() throws Exception {
+    public Path call() {
         processFile(filePath);
         return filePath.getFileName();
     }

@@ -1,0 +1,2 @@
+-take care about changing property one/all models (should compute file again, if now add all models and delete higher models if now compute only first. Check if change in DBDownloader at oldFiles set (deleteing all files at change preprocess model) work
+-take care about state of diff (0 unchanged, 1 changed, >=2 error)

@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -106,8 +109,11 @@ public final class Utils {
      *                  which indicates abnormal termination.
      * @param errLogger error logger to print message, when command return status != 0,
      *                  which indicates abnormal termination.
+     * @param properExitVals list of exitValues of command, which is treated as correct values. If exit value won't be
+     *                       int this list, then JVM will stop work.
      */
-    public static InputStream execCommand(String command, boolean displayInputInRealTime, Logger stdLogger, Logger errLogger){
+    public static InputStream execCommand(String command, boolean displayInputInRealTime, Logger stdLogger
+            , Logger errLogger, List<Integer> properExitVals){
         Process proc;
         InputStream err, std;
         try {
@@ -119,7 +125,7 @@ public final class Utils {
                 Thread.sleep(1000);
             }
             proc.waitFor();
-            if(proc.exitValue() != 0) {
+            if(!properExitVals.contains(proc.exitValue())) {
                 stdLogger.severe("Couldn't exec comand:\n" + command);
                 errLogger.severe(new String(err.readAllBytes(), StandardCharsets.UTF_8));
                 System.exit(-1);
@@ -136,13 +142,27 @@ public final class Utils {
     /**
      * Execute given command in blocking mode.
      * @param command Command to execute.
+     * @param displayInputInRealTime whether to display or not data printed to standard output from executed process,
+     *                              while it's still working.
+     * @param stdLogger standard logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     * @param errLogger error logger to print message, when command return status != 0,
+     *                  which indicates abnormal termination.
+     */
+    public static InputStream execCommand(String command, boolean displayInputInRealTime,
+                                          Logger stdLogger, Logger errLogger){
+        return execCommand(command, displayInputInRealTime, stdLogger, errLogger, Collections.singletonList(0));
+    }
+    /**
+     * Execute given command in blocking mode.
+     * @param command Command to execute.
      * @param stdLogger standard logger to print message, when command return status != 0,
      *                  which indicates abnormal termination.
      * @param errLogger error logger to print message, when command return status != 0,
      *                  which indicates abnormal termination.
      */
     public static InputStream execCommand(String command, Logger stdLogger, Logger errLogger){
-        return execCommand(command, false, stdLogger, errLogger);
+        return execCommand(command, false, stdLogger, errLogger, Collections.singletonList(0));
     }
 
     /**

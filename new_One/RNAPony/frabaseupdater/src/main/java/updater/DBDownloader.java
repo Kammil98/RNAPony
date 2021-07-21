@@ -1,11 +1,13 @@
 package updater;
 
 import lombok.Getter;
-import models.CifFile;
+import lombok.NonNull;
+import models.Structure;
 import models.DBrecord;
 import utils.Utils;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,10 +16,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DBDownloader {
 
     public static final Path downloadPath = Main.frabaseDir.resolve("3DStructures");
+    public static final Path newRecordsPath = Main.frabaseDir.resolve("DBrecords.txt");
     public static final ConcurrentLinkedQueue<DBrecord> records = new ConcurrentLinkedQueue<>();
     @Getter
-    private static AtomicInteger fileNo = new AtomicInteger();
-    private static final Object synchronizer = new Object();
+    private static final AtomicInteger fileNo = new AtomicInteger();
 
     /**
      * Download file with new structures in PDB.
@@ -29,13 +31,13 @@ public class DBDownloader {
         Utils.createDirIfNotExist(outDir, Main.stdLogger);
 
         //-O stands for overwrite, -P stands for directory
-        Utils.execCommand("wget -P " +
+        /*Utils.execCommand("wget -P " +
                         outDir.getAbsolutePath() +
                         " https://ftp.wwpdb.org/pub/pdb/derived_data/pdb_entry_type.txt -O " +
                         outPath,
                 false,
                 Main.stdLogger,
-                Main.errLogger);
+                Main.errLogger);*/
         return outPath;
     }
 
@@ -62,8 +64,10 @@ public class DBDownloader {
             File file = Worker.getOldFilesDir().resolve(fileName).toFile();
             if(!file.delete())
                 file.deleteOnExit();
-            DBUpdater.updatedFiles.add(new CifFile(fileName.substring(0, fileName.length() - 7), null));
-
+            DBUpdater.updatedFiles.add(new Structure(fileName.substring(0, fileName.length() - 7), null));
+            if(DBUpdater.updatedFiles.size() > 1000){
+                DBDownloader.saveQueueToFile(DBUpdater.updatedFiles, DBUpdater.updatedStructuresPath);
+            }
         });
     }
 
@@ -71,9 +75,16 @@ public class DBDownloader {
         String line, id, type;
         StringTokenizer structure;
         int counter = 0;
+
         HashSet<String> oldFiles = new HashSet<>(
-                Arrays.asList(Objects.requireNonNull(Worker.getOldFilesDir().toFile().list())));
+                Arrays.asList(Objects.requireNonNullElse((Worker.getOldFilesDir().toFile().list()), new String[]{})));
         HashSet<String> newFiles = new HashSet<>(1000);
+
+        //change preprocess mode. Need to recompute all files again, soo here we delete all old files.
+        if(!Preprocessor.getPreprocessType().equals(Preprocessor.getLastPreprocessType())){
+            Arrays.asList(Objects.requireNonNullElse(Worker.getOldFilesDir().toFile().listFiles(), new File[]{}))
+                    .forEach(File::delete);
+        }
 
         Main.verboseInfo("Filtering out DNA structures.", 2);
         try(Scanner structuresReader = new Scanner(dnaListPath.toFile());
@@ -81,7 +92,7 @@ public class DBDownloader {
                     new OutputStreamWriter(new FileOutputStream(dnaIdListPath.toString())))){
             //uncomment code below, when testing on real list of files
 
-            /*while (structuresReader.hasNextLine()){
+            while (structuresReader.hasNextLine()){
                 line = structuresReader.nextLine();
                 structure = new StringTokenizer(line, " \t");
                 id = structure.nextToken();
@@ -98,13 +109,13 @@ public class DBDownloader {
             }
             oldFiles.removeAll(newFiles);
             newFiles.clear();
-            markDeletedStructures(oldFiles);*/
+            addToUpdatedFiles(oldFiles);
             //uncomment code below, when testing on chosen list of files
-            newFiles.addAll(Arrays.asList("100d.cif.gz", "1et4.cif.gz", "1ekz.cif.gz", "1elh.cif.gz", "1ekd.cif.gz", "1eqq.cif.gz"));//
+            /*newFiles.addAll(Arrays.asList("100d.cif.gz", "1ekz.cif.gz", "1elh.cif.gz", "1ekd.cif.gz", "1eqq.cif.gz"));//, "1et4.cif.gz"
             oldFiles.removeAll(newFiles);
             newFiles.clear();
-            bw.write("100d,1et4,1ekz,1elh,1ekd,1eqq");//
-            addToUpdatedFiles(oldFiles);
+            bw.write("100d,1ekz,1elh,1ekd,1eqq");//,1et4
+            addToUpdatedFiles(oldFiles);*/
         } catch (FileNotFoundException e) {
             Main.errLogger.severe("Couldn't find file: resolu.idx");
         } catch (IOException e) {
@@ -142,10 +153,35 @@ public class DBDownloader {
         return downloadPath;
     }
 
-    public static void saveRecordsToFile(ArrayList<DBrecord> records){
+    /**
+     * Delete file with database records and file with models of updated structures
+     * from old update and create new ones.
+     */
+    public static void prepareFiles(){
+        prepareFile(newRecordsPath.toFile());
+        prepareFile(DBUpdater.updatedStructuresPath.toFile());
+    }
+
+    private static void prepareFile(File outFile){
+        try {
+            outFile.delete();
+            if(!outFile.createNewFile()){
+                Main.verboseInfo("Couldn't access file:\n" + outFile.getAbsolutePath(), 1);
+                Main.errLogger.severe("Couldn't access file:\n" + outFile.getAbsolutePath());
+                System.exit(-1);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static <T> void saveQueueToFile(ArrayList<T> records, Path filePath){
+        if(filePath.getFileName().equals(newRecordsPath.getFileName())){
+            WorkSubmitter.getRecordsNo().addAndGet(records.size());
+        }
         try(BufferedWriter bw = new BufferedWriter(
-                new FileWriter(Main.frabaseDir.resolve("DBrecords.txt").toString(), true))) {
-            for(DBrecord record: records){
+                new FileWriter(filePath.toString(), true))) {
+            for(T record: records){
                 bw.write(record + "\n");
             }
         } catch (IOException e) {
@@ -153,35 +189,19 @@ public class DBDownloader {
         }
     }
 
-    /**
-     * Delete file with database from old update and create new one.
-     */
-    public static void prepareDBFile(){
-        File outFile = Path.of(Main.frabaseDir.toString(), "DBrecords.txt").toFile();
-        try {
-            outFile.delete();
-            if(!outFile.createNewFile()){
-                Main.verboseInfo("Couldn't access file:\n" + outFile.getAbsolutePath(), 1);
-                Main.errLogger.severe("Couldn't access file:\n" + outFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void saveRecordsToFile(boolean forceSave){
-        synchronized (synchronizer) {
-            ArrayList<DBrecord> handler;
-            if (records.size() > 1000 || forceSave) {
-                handler = new ArrayList<>(records);
-                saveRecordsToFile(handler);
-                records.removeAll(handler);
+    public static <T> void saveQueueToFile(@NonNull ConcurrentLinkedQueue<T> queue, boolean forceSave, Path filePath){
+        synchronized (queue) {
+            ArrayList<T> handler;
+            if (queue.size() > 1000 || forceSave) {
+                handler = new ArrayList<>(queue);
+                saveQueueToFile(handler, filePath);
+                queue.removeAll(handler);
             }
         }
     }
 
-    public static void saveRecordsToFile(){
-        DBDownloader.saveRecordsToFile(false);
+    public static <T> void saveQueueToFile(ConcurrentLinkedQueue<T> queue, Path filePath){
+        DBDownloader.saveQueueToFile(queue, false, filePath);
     }
 
     /**
@@ -196,7 +216,7 @@ public class DBDownloader {
         String[] fileList = Objects.requireNonNull(dir.toFile().list(filter));
         ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
 
-        prepareDBFile();
+        prepareFiles();
         fileNo.set(fileList.length);
         for (String file : fileList) {
             callables.add(new Worker(dir.resolve(file)));
@@ -207,6 +227,6 @@ public class DBDownloader {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        DBDownloader.saveRecordsToFile(true);
+        DBDownloader.saveQueueToFile(records, true, newRecordsPath);
     }
 }
