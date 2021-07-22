@@ -1,5 +1,6 @@
 package updater;
 
+import lombok.Getter;
 import models.Structure;
 import models.DBrecord;
 
@@ -13,9 +14,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DBUpdater implements Closeable {
 
     private final Connection conn;
-    public static final ConcurrentLinkedQueue<Structure> updatedFiles = new ConcurrentLinkedQueue<>();
+    @Getter
+    private static final ConcurrentLinkedQueue<Structure> updatedFiles = new ConcurrentLinkedQueue<>();
     public static final Path updatedStructuresPath = Main.frabaseDir.resolve("UpdatedStructures.txt");
+    private static final int queryBatchSize = 1000;
     private final String table = "rnapony";
+
     public DBUpdater() throws SQLException {
         String jdbcUrl = "jdbc:postgresql://localhost:5432/rnaponydb";
         String user = "rnaponyadmin";
@@ -122,11 +126,11 @@ public class DBUpdater implements Closeable {
 
     public int addOrUpdateNewRecords(Path newRecordsPath){
         int affectedRows = 0;
-        ArrayList<DBrecord> records = new ArrayList<>(1000);
+        ArrayList<DBrecord> records = new ArrayList<>(queryBatchSize);
         try(Scanner recordsReader = new Scanner(newRecordsPath.toFile())){
             while (recordsReader.hasNextLine()){
                 records.add(readRecord(recordsReader.nextLine()));
-                if(records.size() == 1000) {//to save memory  - can't load whole database at once
+                if(records.size() == queryBatchSize) {//to save memory  - can't load whole database at once
                     affectedRows += addRecordsToDB(records);
                     records.clear();
                 }
@@ -196,13 +200,13 @@ public class DBUpdater implements Closeable {
 
     public int deleteOldRecords(){
         int affectedrows = 0;
-        DBDownloader.saveQueueToFile(updatedFiles, true, updatedStructuresPath);
+        DBDownloader.saveQueueToFile(getUpdatedFiles(), true, updatedStructuresPath);
 
-        ArrayList<Structure> structures = new ArrayList<>(1000);
+        ArrayList<Structure> structures = new ArrayList<>(queryBatchSize);
         try(Scanner structuresReader = new Scanner(updatedStructuresPath.toFile())){
             while (structuresReader.hasNextLine()){
                 structures.add(readStructure(structuresReader.nextLine()));
-                if(structures.size() == 1000) {//to save memory  - can't load whole database at once
+                if(structures.size() == queryBatchSize) {//to save memory  - can't load whole database at once
                     affectedrows += deleteRecordsFromDB(structures);
                     structures.clear();
                 }

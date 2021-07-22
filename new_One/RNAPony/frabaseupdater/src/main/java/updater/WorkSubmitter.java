@@ -15,8 +15,8 @@ public class WorkSubmitter implements Runnable{
 
     private final Timer timer;
     @Getter(AccessLevel.PACKAGE)
-    private static final AtomicInteger fileNo = new AtomicInteger();
-    private final HashSet<String> files = new HashSet<>(1000);
+    private static final AtomicInteger downloadedFileNo = new AtomicInteger();
+    private final HashSet<String> files = new HashSet<>(DBDownloader.getFilesBatchSize());
     private final ArrayList<Future<Path>> tasks = new ArrayList<>(200);
     private final ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
     @Getter(AccessLevel.PACKAGE)
@@ -81,7 +81,7 @@ public class WorkSubmitter implements Runnable{
             }
             return false;
         });
-        WorkSubmitter.fileNo.addAndGet(currFileList.size());
+        WorkSubmitter.downloadedFileNo.addAndGet(currFileList.size());
         files.addAll(currFileList);
         return currFileList;
     }
@@ -144,8 +144,6 @@ public class WorkSubmitter implements Runnable{
 
     @Override
     public void run() {
-        fileNo.set(0);
-        recordsNo.set(0);
         Main.verboseInfo("Computing records.", 1);
         while (isAlive){
             //wait some time, till new files will be downloaded

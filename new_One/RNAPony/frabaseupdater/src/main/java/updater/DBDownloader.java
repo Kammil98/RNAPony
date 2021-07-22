@@ -7,7 +7,6 @@ import models.DBrecord;
 import utils.Utils;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -17,6 +16,8 @@ public class DBDownloader {
 
     public static final Path downloadPath = Main.frabaseDir.resolve("3DStructures");
     public static final Path newRecordsPath = Main.frabaseDir.resolve("DBrecords.txt");
+    @Getter
+    private static final int filesBatchSize = 1000;
     public static final ConcurrentLinkedQueue<DBrecord> records = new ConcurrentLinkedQueue<>();
     @Getter
     private static final AtomicInteger fileNo = new AtomicInteger();
@@ -64,9 +65,9 @@ public class DBDownloader {
             File file = Worker.getOldFilesDir().resolve(fileName).toFile();
             if(!file.delete())
                 file.deleteOnExit();
-            DBUpdater.updatedFiles.add(new Structure(fileName.substring(0, fileName.length() - 7), null));
-            if(DBUpdater.updatedFiles.size() > 1000){
-                DBDownloader.saveQueueToFile(DBUpdater.updatedFiles, DBUpdater.updatedStructuresPath);
+            DBUpdater.getUpdatedFiles().add(new Structure(fileName.substring(0, fileName.length() - 7), null));
+            if(DBUpdater.getUpdatedFiles().size() > filesBatchSize){
+                DBDownloader.saveQueueToFile(DBUpdater.getUpdatedFiles(), DBUpdater.updatedStructuresPath);
             }
         });
     }
@@ -78,7 +79,7 @@ public class DBDownloader {
 
         HashSet<String> oldFiles = new HashSet<>(
                 Arrays.asList(Objects.requireNonNullElse((Worker.getOldFilesDir().toFile().list()), new String[]{})));
-        HashSet<String> newFiles = new HashSet<>(1000);
+        HashSet<String> newFiles = new HashSet<>(filesBatchSize);
 
         //change preprocess mode. Need to recompute all files again, soo here we delete all old files.
         if(!Preprocessor.getPreprocessType().equals(Preprocessor.getLastPreprocessType())){
@@ -101,7 +102,7 @@ public class DBDownloader {
                     bw.write(id + ",");
                     newFiles.add(id + ".cif.gz");
                     counter++;
-                    if(newFiles.size() == 1000){
+                    if(newFiles.size() == filesBatchSize){
                         oldFiles.removeAll(newFiles);
                         newFiles.clear();
                     }
@@ -192,7 +193,7 @@ public class DBDownloader {
     public static <T> void saveQueueToFile(@NonNull ConcurrentLinkedQueue<T> queue, boolean forceSave, Path filePath){
         synchronized (queue) {
             ArrayList<T> handler;
-            if (queue.size() > 1000 || forceSave) {
+            if (queue.size() > filesBatchSize || forceSave) {
                 handler = new ArrayList<>(queue);
                 saveQueueToFile(handler, filePath);
                 queue.removeAll(handler);

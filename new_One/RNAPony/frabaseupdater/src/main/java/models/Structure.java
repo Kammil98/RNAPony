@@ -10,6 +10,10 @@ public class Structure implements Serializable {
     @Getter
     private static int maxModelsNo = 1;
 
+    public static void resetMaxModelsNo(){
+        maxModelsNo = 1;
+    }
+
     String id;
     /** null, if file for structure with this pdb id was deleted (delete
      * file from server and delete models from db).

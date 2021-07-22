@@ -18,7 +18,7 @@ public class PropertiesReader {
     @Parameter(names = "--help", description = "Display description for all arguments.", help = true)
     private static boolean help = false;
     @Parameter(names = {"--config", "-c"}, description = "Path to .properties file with configuration.")
-    private static String path = null;//Path.of(".", "user.properties").toString();
+    private static String path = null;
     private static Properties customProperties;
     private static Properties defaultProperties;
 

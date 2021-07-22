@@ -2,13 +2,12 @@ package updater;
 
 import com.beust.jcommander.Parameter;
 import lombok.Getter;
+import models.Structure;
 import utils.Utils;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,6 +67,17 @@ public class Main {
             Main.errLogger.severe("Couldn't connect to database: ");
             System.exit(-1);
         }
+    }
+    private static void initProgramState(){
+        Structure.resetMaxModelsNo();
+        DBDownloader.getFileNo().set(0);
+        DBDownloader.records.clear();
+        DBUpdater.getUpdatedFiles().clear();
+        Preprocessor.getFilesWithAllModelsEmptyNo().set(0);
+        Worker.getProcessedFiles().set(0);
+        Worker.getProcessedModels().set(0);
+        WorkSubmitter.getDownloadedFileNo().set(0);
+        WorkSubmitter.getRecordsNo().set(0);
     }
 
     public static void main(String[] args){

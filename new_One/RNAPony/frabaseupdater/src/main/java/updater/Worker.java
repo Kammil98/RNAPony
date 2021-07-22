@@ -112,8 +112,8 @@ public class Worker implements Callable<Path> {
             models[fileNo] = record.getModelNo();
             fileNo++;
         }
-        DBUpdater.updatedFiles.add(new Structure(id, models));
-        DBDownloader.saveQueueToFile(DBUpdater.updatedFiles, DBUpdater.updatedStructuresPath);
+        DBUpdater.getUpdatedFiles().add(new Structure(id, models));
+        DBDownloader.saveQueueToFile(DBUpdater.getUpdatedFiles(), DBUpdater.updatedStructuresPath);
     }
 
     private void unGzipFile(Path compressedFile, Path decompressedFile) {
@@ -165,7 +165,7 @@ public class Worker implements Callable<Path> {
                 .resolve(unpackedFileName);
         Main.verboseInfo("Start processing " +  fileName + ". " +
                 processedFiles.get() + "/" +  DBDownloader.getFileNo().get() + " files processed. " +
-                WorkSubmitter.getFileNo().get() + "/" + DBDownloader.getFileNo().get() + " files downloaded", 2);
+                WorkSubmitter.getDownloadedFileNo().get() + "/" + DBDownloader.getFileNo().get() + " files downloaded", 2);
         if(isUnchanged(filePath)){
             cleanUp(start, filePath);
             Main.verboseInfo(filePath.getFileName() + " is unchanged!!!", 3);
