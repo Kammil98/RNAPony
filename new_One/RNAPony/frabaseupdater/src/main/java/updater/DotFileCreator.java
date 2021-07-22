@@ -11,7 +11,7 @@ import java.util.*;
 
 public class DotFileCreator {
 
-    private static final Path pdbeeOutDir = Path.of(Main.frabaseDir.getFileName().toString(),"output");
+    private static final Path pdbeeOutDir = Main.frabaseDir.resolve("output");
 
     private void removeLogs(final String directory) throws IOException {
         String command;
@@ -24,10 +24,10 @@ public class DotFileCreator {
      * @param filePath path to 3D file.
      * @return directory, where output of RNApdbee was written
      */
-    private Path createDotFile(final Path filePath){
+    Path createDotFile(final Path filePath){
         Process proc;
         String command, inputFilePath = filePath.toAbsolutePath().toString();
-        Path outDir = Path.of(pdbeeOutDir.toString(), String.valueOf(Thread.currentThread().getId()));
+        Path outDir = pdbeeOutDir.resolve(String.valueOf(Thread.currentThread().getId()));
         InputStream err;
         try {
             Utils.createDirIfNotExist(outDir.toFile(), true, Main.stdLogger, Main.errLogger);
@@ -53,7 +53,7 @@ public class DotFileCreator {
      * @param filePath path to file with 2D representation of structure.
      * @return DotFile Object, which represent given dot file.
      */
-    private DotFile readDotFile(final Path filePath){
+    DotFile readDotFile(final Path filePath){
         String header;
         StringBuilder name = new StringBuilder(), seq = new StringBuilder(), dot = new StringBuilder();
         try(Scanner dotReader = new Scanner(new File(filePath.toString()))){
@@ -76,7 +76,7 @@ public class DotFileCreator {
         if(Main.getVerboseMode() >= 3)
             Main.stdLogger.info("Prepare dot file: run RNApdbee for " + filePath.getFileName());
         outDir = createDotFile(filePath);
-        dotFile = readDotFile(Path.of(outDir.toString(), "0", "strands.dbn"));
+        dotFile = readDotFile(outDir.resolve("0").resolve("strands.dbn"));
         return dotFile;
     }
 }

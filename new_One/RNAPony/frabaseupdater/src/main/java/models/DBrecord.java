@@ -107,7 +107,7 @@ public class DBrecord {
         id = id.substring(0, 4).toUpperCase();
         try(Scanner dotReader = new Scanner(
                 new File(
-                        Path.of(Main.frabaseDir.toString(), "resolu.idx").toString()))){
+                        Main.frabaseDir.resolve("resolu.idx").toString()))){
             while (!dotReader.nextLine().stripLeading().startsWith("IDCODE")) {
             }
             dotReader.nextLine();
@@ -136,7 +136,7 @@ public class DBrecord {
      *                 id_modelNo.cif, where id means id from Protein Data Bank.
      */
     public void computeRecord(final DotFile dotFile, final String filename){
-        String id = filename.substring(0, 4);
+        String id = filename.substring(0, 4).toUpperCase();
         setId(id);
         setModelNo(Integer.parseInt(
                 filename.substring(5, filename.lastIndexOf('.'))
