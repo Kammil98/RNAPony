@@ -129,10 +129,8 @@ public class PropertiesReader {
      * @param args arguments given to program.
      */
     public static void loadProperties(String[] args){
-        Preprocessor.setLastPreprocessType(Preprocessor.getPreprocessType());
         loadArgs(args);
         loadPropertyFile();
         loadArgs(args);//second time, because properties from file overwritten this properties.
-        Main.stdLogger.info("");
     }
 }

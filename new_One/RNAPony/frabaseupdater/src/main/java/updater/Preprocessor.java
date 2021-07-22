@@ -24,7 +24,7 @@ public class Preprocessor {
     @Parameter(names = {"--type", "-t"}, converter = PreprocessTypeConverter.class,
             description = "If equals all, then all models in file are processed." +
                     "If equals first, then only first model in file is processed. Possible types are: all, first.")
-    private static PreprocessType preprocessType = null;
+    private static PreprocessType preprocessType = PreprocessType.FIRST;
     @Getter @Setter
     private static PreprocessType lastPreprocessType;
     public Path extractRNA(final Path filePath){

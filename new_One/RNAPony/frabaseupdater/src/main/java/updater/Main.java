@@ -68,7 +68,7 @@ public class Main {
             System.exit(-1);
         }
     }
-    private static void initProgramState(){
+    private static void initProgramState(String[] args){
         Structure.resetMaxModelsNo();
         DBDownloader.getFileNo().set(0);
         DBDownloader.records.clear();
@@ -78,10 +78,12 @@ public class Main {
         Worker.getProcessedModels().set(0);
         WorkSubmitter.getDownloadedFileNo().set(0);
         WorkSubmitter.getRecordsNo().set(0);
+        Preprocessor.setLastPreprocessType(Preprocessor.getPreprocessType());
+        PropertiesReader.loadProperties(args);
     }
 
     public static void main(String[] args){
-        PropertiesReader.loadProperties(args);
+        initProgramState(args);
         DBDownloader.prepareFiles();
         WorkSubmitter submitter = new WorkSubmitter(2000);// 2 seconds
         Thread submitterThread = new Thread(submitter);
