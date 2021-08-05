@@ -1,6 +1,5 @@
 package updater;
 
-import models.DBrecord;
 import models.DotFile;
 import utils.Utils;
 
@@ -20,7 +19,7 @@ public class DotFileCreator {
     }
 
     /**
-     * Create Dot file with use of RNApdbee.
+     * Create Dot file with use of RNApdbee based on preprocessed 3D file.
      * @param filePath path to 3D file.
      * @return directory, where output of RNApdbee was written
      */
@@ -70,6 +69,11 @@ public class DotFileCreator {
         return new DotFile(name.toString(), seq.toString(), dot.toString());
     }
 
+    /**
+     * Create DotFile Object based on preprocessed 3D file.
+     * @param filePath path with 3D file representing some structure.
+     * @return DotFile Object, which represent given structure.
+     */
     public DotFile getDotFile(final Path filePath){
         Path outDir;
         DotFile dotFile;

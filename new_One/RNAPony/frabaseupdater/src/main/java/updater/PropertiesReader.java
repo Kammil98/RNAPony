@@ -38,6 +38,9 @@ public class PropertiesReader {
         }
     }
 
+    /**
+     * Load properties from .properties file.
+     */
     private static void downloadPropertyFile(){
         defaultProperties = new Properties();
 

@@ -41,40 +41,10 @@ public class DBUpdater implements Closeable {
         stmt.close();
     }
 
-    DBrecord readRecord(String line){
-        DBrecord record;
-        StringTokenizer tokenizer = new StringTokenizer(line, " ");
-        record = new DBrecord(tokenizer.nextToken(),
-                Integer.parseInt(tokenizer.nextToken()),
-                tokenizer.nextToken(),
-                Double.parseDouble(tokenizer.nextToken()),
-                tokenizer.nextToken(),
-                tokenizer.nextToken(),
-                tokenizer.nextToken(),
-                Integer.parseInt(tokenizer.nextToken()));
-        return record;
-    }
-
-    Structure readStructure(String line){
-        int[] models;
-        int tokenNo = 0;
-        StringTokenizer tokenizer = new StringTokenizer(line, " ");
-        String id = tokenizer.nextToken();
-        String token = tokenizer.nextToken();
-        if(token.equals("null")){
-            return new Structure(id, null);
-        }
-        token = line.substring(line.indexOf('[') + 1, line.length() - 1);
-        tokenizer = new StringTokenizer(token, ",");
-        models = new int[tokenizer.countTokens()];
-        while (tokenizer.hasMoreTokens()){
-            token = tokenizer.nextToken().stripLeading();
-            models[tokenNo] = Integer.parseInt(token);
-            tokenNo++;
-        }
-        return new Structure(id, models);
-    }
-
+    /**
+     * Handle printing SQL errors.
+     * @param e error to print.
+     */
     private void handleSqlError(SQLException e){
         while(e!= null){
             Main.verboseInfo("Couldn't execute sql command: \n" + e.getSQLState() + "\n" + e.getErrorCode() +
@@ -85,6 +55,12 @@ public class DBUpdater implements Closeable {
         }
     }
 
+    /**
+     * Add single DBrecord to batch, which will be send to database.
+     * @param record recorde to be added.
+     * @param pstmt PreparedStatement, which keep batch to be sent.
+     * @throws SQLException if a database access error occurs or this method is called on a closed PreparedStatement.
+     */
     private void addRecordToBatch(DBrecord record, PreparedStatement pstmt) throws SQLException {
         pstmt.setString(1, record.getId());
         pstmt.setInt(2, record.getModelNo());
@@ -97,6 +73,11 @@ public class DBUpdater implements Closeable {
         pstmt.addBatch();
     }
 
+    /**
+     * Add given records to database.
+     * @param records records to be added.
+     * @return amount of affected rows.
+     */
     private int addRecordsToDB(ArrayList<DBrecord> records){
         int affectedRows = 0;
         int[] affectedRowsList;
@@ -124,12 +105,18 @@ public class DBUpdater implements Closeable {
         return affectedRows;
     }
 
+    /**
+     * Add new records to database. If some records with this pdbID and modelNo
+     * exist, then this record in database is updated.
+     * @param newRecordsPath path to file with new records.
+     * @return amount of affected rows.
+     */
     public int addOrUpdateNewRecords(Path newRecordsPath){
         int affectedRows = 0;
         ArrayList<DBrecord> records = new ArrayList<>(queryBatchSize);
         try(Scanner recordsReader = new Scanner(newRecordsPath.toFile())){
             while (recordsReader.hasNextLine()){
-                records.add(readRecord(recordsReader.nextLine()));
+                records.add(DBrecord.valueOf(recordsReader.nextLine()));
                 if(records.size() == queryBatchSize) {//to save memory  - can't load whole database at once
                     affectedRows += addRecordsToDB(records);
                     records.clear();
@@ -148,6 +135,13 @@ public class DBUpdater implements Closeable {
         // them manually or just not by this program (delete all, which are not in oldFiles)
     }
 
+    /**
+     * Add single structure to batch, which will be send to database, to delete some records,
+     * which represent old models, which didn't occur in this update.
+     * @param structure structure with models, which should be saved in database.
+     * @param pstmt PreparedStatement, which keep batch to be sent.
+     * @throws SQLException if a database access error occurs or this method is called on a closed PreparedStatement.
+     */
     private void addDeletionToBatch(PreparedStatement pstmt, Structure structure) throws SQLException {
         int[] models;
         models = structure.getModels();
@@ -170,6 +164,9 @@ public class DBUpdater implements Closeable {
         pstmt.addBatch();
     }
 
+    /**
+     * @return Query, to delete old models.
+     */
     private String getDeleteQuery(){
         StringBuilder sqlQuery = new StringBuilder("DELETE FROM " + table + " WHERE id = ? AND " +
                 "(? OR modelNo NOT IN ( ");
@@ -179,6 +176,11 @@ public class DBUpdater implements Closeable {
         return sqlQuery.toString();
     }
 
+    /**
+     * Delete old structures from database.
+     * @param structures structures, which will stay in database.
+     * @return amount of deleted rows.
+     */
     private int deleteRecordsFromDB(ArrayList<Structure> structures){
         String sqlQuery = getDeleteQuery();
         int affectedRows = 0;
@@ -198,6 +200,11 @@ public class DBUpdater implements Closeable {
         return affectedRows;
     }
 
+    /**
+     * Delete all old records from database, which occurred in last update,
+     * but don't occur in present update.
+     * @return amount of deleted rows.
+     */
     public int deleteOldRecords(){
         int affectedrows = 0;
         DBDownloader.saveQueueToFile(getUpdatedFiles(), true, updatedStructuresPath);
@@ -205,7 +212,7 @@ public class DBUpdater implements Closeable {
         ArrayList<Structure> structures = new ArrayList<>(queryBatchSize);
         try(Scanner structuresReader = new Scanner(updatedStructuresPath.toFile())){
             while (structuresReader.hasNextLine()){
-                structures.add(readStructure(structuresReader.nextLine()));
+                structures.add(Structure.valueOf(structuresReader.nextLine()));
                 if(structures.size() == queryBatchSize) {//to save memory  - can't load whole database at once
                     affectedrows += deleteRecordsFromDB(structures);
                     structures.clear();

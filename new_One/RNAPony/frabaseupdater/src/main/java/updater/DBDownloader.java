@@ -60,7 +60,14 @@ public class DBDownloader {
     }
 
 
-    private void addToUpdatedFiles(HashSet<String> oldFiles){
+    /**
+     * Add all files, which has been deleted from PDB since last update
+     * to list of updated files. We add this structures with models=null, which
+     * means this structure was deleted.
+     * @param oldFiles list of old files, which didn't occur
+     *                 in new list of files downloaded from PDB.
+     */
+    private void addDeletedFilesToUpdatedList(HashSet<String> oldFiles){
         oldFiles.forEach(fileName ->{
             File file = Worker.getOldFilesDir().resolve(fileName).toFile();
             if(!file.delete())
@@ -72,20 +79,38 @@ public class DBDownloader {
         });
     }
 
-    private void filterOutDNAStructures(Path dnaListPath, Path dnaIdListPath){
-        String line, id, type;
-        StringTokenizer structure;
-        int counter = 0;
-
+    /**
+     * Remove files from old update, if we need to recompute them (preprocess
+     * parameter changed).
+     * @return list of files, which was downloaded at last update.
+     */
+    private HashSet<String> prepareOldFiles(){
         HashSet<String> oldFiles = new HashSet<>(
                 Arrays.asList(Objects.requireNonNullElse((Worker.getOldFilesDir().toFile().list()), new String[]{})));
-        HashSet<String> newFiles = new HashSet<>(filesBatchSize);
 
-        //change preprocess mode. Need to recompute all files again, soo here we delete all old files.
+        //Change preprocess mode - need to recompute all files again, soo here we delete all old files.
+        //It forces program, to notice, that new files differ, so need to recompute them with only expected models.
         if(!Preprocessor.getPreprocessType().equals(Preprocessor.getLastPreprocessType())){
             Arrays.asList(Objects.requireNonNullElse(Worker.getOldFilesDir().toFile().listFiles(), new File[]{}))
                     .forEach(File::delete);
         }
+        return oldFiles;
+    }
+
+    /**
+     * Check downloaded list of structures, and filter out 100% protein
+     * structures. This procedure also find out, which files were present
+     * at last update, and now are absent and mark them to be deleted from DB.
+     * @param dnaListPath path to downloaded list with ids of structures.
+     * @param dnaIdListPath path to file, where should be saved all nucleotides
+     *                      and hybrids (partially proteins and partially nucleotides).
+     */
+    private void filterOutDNAStructures(Path dnaListPath, Path dnaIdListPath){
+        String line, id, type;
+        StringTokenizer structure;
+        int counter = 0;
+        HashSet<String> oldFiles = prepareOldFiles();
+        HashSet<String> newFiles = new HashSet<>(filesBatchSize);
 
         Main.verboseInfo("Filtering out DNA structures.", 2);
         try(Scanner structuresReader = new Scanner(dnaListPath.toFile());
@@ -110,7 +135,7 @@ public class DBDownloader {
             }
             oldFiles.removeAll(newFiles);
             newFiles.clear();
-            addToUpdatedFiles(oldFiles);
+            addDeletedFilesToUpdatedList(oldFiles);
             //uncomment code below, when testing on chosen list of files
             /*newFiles.addAll(Arrays.asList("100d.cif.gz", "1ekz.cif.gz", "1elh.cif.gz", "1ekd.cif.gz", "1eqq.cif.gz"));//, "1et4.cif.gz"
             oldFiles.removeAll(newFiles);
@@ -127,6 +152,10 @@ public class DBDownloader {
                 "Keep calm. It will take some time.", 1);
     }
 
+    /**
+     * Create new nucleotides list and download list of resolutions of this structures.
+     * @return Path to file with nucleotide structures.
+     */
     public Path getNewStructuresList(){
         Path dnaIdListPath = Path.of(
                 Objects.requireNonNull(this.getClass().getResource("/")).getPath(),
@@ -139,6 +168,10 @@ public class DBDownloader {
         return dnaIdListPath;
     }
 
+    /**
+     * Download new nucleotides and list of resolutions of this structures.
+     * @return directory, where new files with structures are kept.
+     */
     public Path downloadNewStructures(){
         String command;
         boolean displayInfo = (Main.getVerboseMode() >= 2);

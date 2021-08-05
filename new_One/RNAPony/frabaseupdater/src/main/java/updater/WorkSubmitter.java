@@ -11,6 +11,10 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Check if some files are downloaded and submit downloaded files
+ * to workers, which process them and compute records.
+ */
 public class WorkSubmitter implements Runnable{
 
     private final Timer timer;
@@ -44,6 +48,10 @@ public class WorkSubmitter implements Runnable{
         }, 0, refreshTime);
     }
 
+    /**
+     * Remove files, which was already processed and its processing ended from
+     * list of processed files.
+     */
     private void removeDeletedFiles(){
         HashSet<String> deletedFiles = new HashSet<>();
         //Removing submitted files
@@ -61,6 +69,12 @@ public class WorkSubmitter implements Runnable{
         files.removeAll(deletedFiles);
     }
 
+    /**
+     * Check if there is new downloaded files. If new files were downloaded,
+     * then submit them to next available worker.
+     * @param dir directory, were files are downloaded.
+     * @return files, which are downloaded and yet not submitted to workers.
+     */
     private HashSet<String> getNewFiles(final Path dir){
         FilenameFilter filter = (dir1, name) -> name.endsWith(".gz");
         HashSet<String> currFileList;

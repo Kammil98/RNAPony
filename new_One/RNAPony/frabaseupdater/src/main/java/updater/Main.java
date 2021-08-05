@@ -55,6 +55,9 @@ public class Main {
         Utils.changeLogHandler(stdLogger);
     }
 
+    /**
+     * Updates database based on downloaded and preprocessed files.
+     */
     private static void updateDB(){
         int affectedRows;
         try(DBUpdater updater = new DBUpdater()) {
@@ -68,6 +71,14 @@ public class Main {
             System.exit(-1);
         }
     }
+
+
+    /**
+     * Initialize starting state of program.
+     * In other words it return program to initial state
+     * before next actualization of database.
+     * @param args arguments given to program through console
+     */
     private static void initProgramState(String[] args){
         Structure.resetMaxModelsNo();
         DBDownloader.getFileNo().set(0);

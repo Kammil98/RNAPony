@@ -83,4 +83,20 @@ class DBrecordTest {
     @Test
     void testToString() {
     }
+
+    @Test
+    void valueOf() {
+        DBrecord dBrecord;
+        dBrecord = DBrecord.valueOf("1elh 6 A_B 999.99 UUGCCUGGCGGC;AACUGCCAGGCAU; .((((((((((....)))))))))).. " +
+                "0;23;21;19;17;15;13;11;9;7;5;0;0;0;0;-5;-7;-9;-11;-13;-15;-17;-19;-21;-23;0;0 0");
+        assertEquals("1elh", dBrecord.getId());
+        assertEquals(6, dBrecord.getModelNo());
+        assertEquals("A_B", dBrecord.getChain());
+        assertEquals(999.99, dBrecord.getResol());
+        assertEquals("UUGCCUGGCGGC;AACUGCCAGGCAU;", dBrecord.getSeq());
+        assertEquals(".((((((((((....))))))))))..", dBrecord.getDot());
+        assertEquals("0;23;21;19;17;15;13;11;9;7;5;0;0;0;0;-5;-7;-9;-11;-13;-15;-17;-19;-21;-23;0;0",
+                dBrecord.getDotIntervals());
+        assertEquals(0, dBrecord.getMaxOrder());
+    }
 }

@@ -8,7 +8,6 @@ import updater.Main;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
 import java.util.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -152,5 +151,24 @@ public class DBrecord {
     @Override
     public String toString() {
         return id + " " + modelNo + " " + chain + " " + resol + " " + seq + " " + dot + " " + dotIntervals + " " + maxOrder;
+    }
+
+    /**
+     * Create DBrecord based on given String
+     * @param line String with given record. Format need to be same as in toString method.
+     * @return record in DBrecord Object.
+     */
+    public static DBrecord valueOf(String line){
+        DBrecord record;
+        StringTokenizer tokenizer = new StringTokenizer(line, " ");
+        record = new DBrecord(tokenizer.nextToken(),
+                Integer.parseInt(tokenizer.nextToken()),
+                tokenizer.nextToken(),
+                Double.parseDouble(tokenizer.nextToken()),
+                tokenizer.nextToken(),
+                tokenizer.nextToken(),
+                tokenizer.nextToken(),
+                Integer.parseInt(tokenizer.nextToken()));
+        return record;
     }
 }

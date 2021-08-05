@@ -27,7 +27,13 @@ public class Preprocessor {
     private static PreprocessType preprocessType = PreprocessType.FIRST;
     @Getter @Setter
     private static PreprocessType lastPreprocessType;
-    public Path extractRNA(final Path filePath){
+
+    /**
+     * Preprocess structures. Delete DNA fragments and unknown residues.
+     * @param filePath path to .cif file.
+     * @return preprocessed .cif file.
+     */
+    public Path preprocessFile(final Path filePath){
         URL preprocesing3dUrl = getClass().getResource("/preprocesing3d.py");
         Path outDir = preprocessOutDir.resolve(String.valueOf(Thread.currentThread().getId()));
         InputStream info;

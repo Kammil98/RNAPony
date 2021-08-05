@@ -20,6 +20,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Process given file till receive ready records,
+ * which can be saved to database.
+ */
 @AllArgsConstructor
 public class Worker implements Callable<Path> {
     private final Path filePath;
@@ -83,7 +87,7 @@ public class Worker implements Callable<Path> {
         DBrecord record;
         Path preprocessedFileDir;
         Main.verboseInfo("Preprocess " +  filePath, 3);
-        preprocessedFileDir = new Preprocessor().extractRNA(filePath);
+        preprocessedFileDir = new Preprocessor().preprocessFile(filePath);
         String[] fileList = Objects.requireNonNull(preprocessedFileDir.toFile().list());
         if(fileList.length == 0)//statistics to print
             Preprocessor.getFilesWithAllModelsEmptyNo().incrementAndGet();
@@ -136,6 +140,12 @@ public class Worker implements Callable<Path> {
         }
     }
 
+    /**
+     * Check if two files (from this and last update of database) are the same by linux diff command.
+     * @param compressedFile path to compressed file, which will be compared with its version
+     *                       from last update of database.
+     * @return true if files are same. False otherwise.
+     */
     private boolean isUnchanged(Path compressedFile){
         Path oldCompressedFile = oldFilesDir.resolve(compressedFile.getFileName());
         String command = "diff " + compressedFile + " " + oldCompressedFile;
@@ -154,6 +164,10 @@ public class Worker implements Callable<Path> {
         return isUnchanged;
     }
 
+    /**
+     * Process compressed file and receive ready record.
+     * @param filePath path to compressed file.
+     */
     public void processFile(Path filePath){
         String unpackedFileName, fileName = filePath.getFileName().toString();
         Path unpackedFilePath;
@@ -177,6 +191,11 @@ public class Worker implements Callable<Path> {
         cleanUp(start, unpackedFilePath);
     }
 
+    /**
+     * Show how many time took, processing and delete processed file.
+     * @param start time, when processing started in milliseconds.
+     * @param filepath path to processed file.
+     */
     public void cleanUp(Long start, Path filepath){
         long finish;
         if(!filepath.toFile().delete()){
