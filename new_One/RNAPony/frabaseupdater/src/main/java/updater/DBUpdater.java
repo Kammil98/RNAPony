@@ -1,5 +1,6 @@
 package updater;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import models.Structure;
 import models.DBrecord;
@@ -13,20 +14,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DBUpdater implements Closeable {
 
+    @Getter(AccessLevel.PACKAGE)
     private final Connection conn;
     @Getter
     private static final ConcurrentLinkedQueue<Structure> updatedFiles = new ConcurrentLinkedQueue<>();
     public static final Path updatedStructuresPath = Main.frabaseDir.resolve("UpdatedStructures.txt");
     private static final int queryBatchSize = 1000;
-    private final String table = "rnapony";
+    private final String table;
 
-    public DBUpdater() throws SQLException {
+    public DBUpdater(String tableName) throws SQLException {
         String jdbcUrl = "jdbc:postgresql://localhost:5432/rnaponydb";
         String user = "rnaponyadmin";
         String pass = "rnapony";
         conn = DriverManager.getConnection(jdbcUrl, user, pass);
         Statement stmt = conn.createStatement();
-
+        table = tableName;
         String CreateSql = "Create Table IF NOT EXISTS " + table + "(" +
                 "id varchar(4), " +
                 "modelNo int, " +

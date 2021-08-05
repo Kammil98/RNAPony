@@ -60,7 +60,7 @@ public class Main {
      */
     private static void updateDB(){
         int affectedRows;
-        try(DBUpdater updater = new DBUpdater()) {
+        try(DBUpdater updater = new DBUpdater("rnapony")) {
             affectedRows = updater.addOrUpdateNewRecords(frabaseDir.resolve("DBrecords.txt"));
             Main.verboseInfo(affectedRows + " rows were added or updated.", 1);
             affectedRows = updater.deleteOldRecords();

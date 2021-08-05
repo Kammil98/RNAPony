@@ -171,4 +171,24 @@ public class DBrecord {
                 Integer.parseInt(tokenizer.nextToken()));
         return record;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DBrecord dBrecord = (DBrecord) o;
+        return id.equals(dBrecord.id) &&
+                modelNo == dBrecord.modelNo &&
+                Double.compare(dBrecord.resol, resol) == 0 &&
+                chain.equals(dBrecord.chain) &&
+                seq.equals(dBrecord.seq) &&
+                dot.equals(dBrecord.dot) &&
+                dotIntervals.equals(dBrecord.dotIntervals) &&
+                maxOrder == dBrecord.maxOrder;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, modelNo, chain, resol, seq, dot, dotIntervals, maxOrder);
+    }
 }

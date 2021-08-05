@@ -81,10 +81,6 @@ class DBrecordTest {
     }
 
     @Test
-    void testToString() {
-    }
-
-    @Test
     void valueOf() {
         DBrecord dBrecord;
         dBrecord = DBrecord.valueOf("1elh 6 A_B 999.99 UUGCCUGGCGGC;AACUGCCAGGCAU; .((((((((((....)))))))))).. " +
