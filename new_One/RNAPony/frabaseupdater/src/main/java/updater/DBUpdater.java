@@ -179,7 +179,8 @@ public class DBUpdater implements Closeable {
     }
 
     /**
-     * Delete old structures from database.
+     * Delete old structures from database (delete only models of structures, which have its
+     * pdb id structures on list and don't have its models number in structures models list.
      * @param structures structures, which will stay in database.
      * @return amount of deleted rows.
      */
@@ -223,8 +224,10 @@ public class DBUpdater implements Closeable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        if(!structures.isEmpty())
+        if(!structures.isEmpty()) {
             affectedrows += deleteRecordsFromDB(structures);
+            structures.clear();
+        }
 
         return affectedrows;
     }

@@ -1,9 +1,12 @@
 package updater;
 
 import models.DBrecord;
+import models.Structure;
 import org.junit.jupiter.api.*;
+import utils.Utils;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,6 +56,7 @@ class DBUpdaterTest {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         records.sort((o1, o2) -> {
             if (o1.getId().compareTo(o2.getId()) != 0)
                 return o1.getId().compareTo(o2.getId());
@@ -86,7 +90,6 @@ class DBUpdaterTest {
     void addOrUpdateNewRecords() {
         Path path = Path.of(Objects.requireNonNull(getClass().getResource("/DBUpdater_test_DBrecords_1.txt"))
                 .getPath());
-        DBrecord record;
         ArrayList<DBrecord> records = readRecords(path);
         updater.addOrUpdateNewRecords(path);
         checkRecordsEquality(records);
@@ -100,5 +103,33 @@ class DBUpdaterTest {
         records.addAll(readRecords(path));
         updater.addOrUpdateNewRecords(path);
         checkRecordsEquality(records);
+    }
+
+    @Test
+    void deleteOldRecords() {
+        Path path = Path.of(Objects.requireNonNull(getClass().getResource("/DBUpdater_test_DBrecords_1.txt"))
+                .getPath());
+        ArrayList<DBrecord> records = readRecords(path);
+        ArrayList<Structure> structures = new ArrayList<>(records.size());
+
+        updater.addOrUpdateNewRecords(path);
+        records.remove(5);
+        records.remove(1);
+        records.remove(0);
+        structures.add(new Structure("157d", new int[]{}));
+        structures.add(new Structure("165d", null));
+        structures.add(new Structure("17ra", new int[]{1,2,3,5,6,7,8,9,10,11,12}));
+        structures.add(new Structure("1a34", new int[]{1}));
+        structures.add(new Structure("1a51", new int[]{1}));
+        DBUpdater.getUpdatedFiles().addAll(structures);
+        try {
+            Utils.createDirIfNotExist(DBUpdater.updatedStructuresPath.getParent().toFile());
+            DBUpdater.updatedStructuresPath.toFile().createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        updater.deleteOldRecords();
+        checkRecordsEquality(records);
+        DotFileCreatorTest.deleteOutDir(DBUpdater.updatedStructuresPath, 1);
     }
 }

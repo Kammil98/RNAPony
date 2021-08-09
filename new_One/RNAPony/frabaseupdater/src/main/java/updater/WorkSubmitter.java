@@ -4,8 +4,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -15,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Check if some files are downloaded and submit downloaded files
  * to workers, which process them and compute records.
  */
-public class WorkSubmitter implements Runnable{
+public class WorkSubmitter implements Runnable, Closeable {
 
     private final Timer timer;
     @Getter(AccessLevel.PACKAGE)
@@ -170,6 +172,11 @@ public class WorkSubmitter implements Runnable{
             }
             updateDB(DBDownloader.downloadPath);
         }
+        close();
+    }
+
+    @Override
+    public void close() {
         timer.cancel();
         executor.shutdown();
         //wait till workers end work, before save records to file.

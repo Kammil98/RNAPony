@@ -66,7 +66,7 @@ class DBrecordTest {
         DotFile dotFile = new DotFile("A_B_C_D", "GUGGUGAAGUCGCGG;CGCGUCACACCACC;GUGGUGAAGUCGCGG;CGCGUCACACCACC;",
             "((((((..(.((((..)))).).))))))[.((((((..(.((((].)))).).))))))..");
         record.computeRecord(dotFile, "1zz5_1.cif");
-        assertEquals("1ZZ5", record.getId());
+        assertEquals("1zz5", record.getId());
         assertEquals(1, record.getModelNo());
         assertEquals("A_B_C_D", record.getChain());
         assertEquals(3.0, record.getResol());

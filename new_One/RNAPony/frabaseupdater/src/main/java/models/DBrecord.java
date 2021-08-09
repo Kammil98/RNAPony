@@ -135,7 +135,7 @@ public class DBrecord {
      *                 id_modelNo.cif, where id means id from Protein Data Bank.
      */
     public void computeRecord(final DotFile dotFile, final String filename){
-        String id = filename.substring(0, 4).toUpperCase();
+        String id = filename.substring(0, 4);
         setId(id);
         setModelNo(Integer.parseInt(
                 filename.substring(5, filename.lastIndexOf('.'))

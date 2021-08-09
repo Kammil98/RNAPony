@@ -15,13 +15,15 @@ class DotFileCreatorTest {
 
     private static final DotFileCreator creator = new DotFileCreator();
 
-    public static void deleteOutDir(Path outPath){
-        Path dirToDelete = outPath.getParent().getParent();
+    public static void deleteOutDir(Path outPath, int pathDepths){
+        Path dirToDelete = outPath;
+        for(int i = 0; i < pathDepths; i++)
+            dirToDelete = dirToDelete.getParent();
         if(dirToDelete.getFileName().toString().equals("frabase_update") &&
                 dirToDelete.toAbsolutePath().getParent().getFileName().toString().equals("frabaseupdater")){//in case of fatal mistake
             try {
                 FileUtils.deleteDirectory(dirToDelete.toFile());
-                dirToDelete.resolve("errApp.txt").toFile().deleteOnExit();
+                dirToDelete.toAbsolutePath().getParent().resolve("errApp.txt").toFile().deleteOnExit();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -42,7 +44,7 @@ class DotFileCreatorTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        DotFileCreatorTest.deleteOutDir(outPath);
+        DotFileCreatorTest.deleteOutDir(outPath, 2);
         assertTrue(isEqual);
     }
 
@@ -56,6 +58,6 @@ class DotFileCreatorTest {
         assertEquals(expectedDotFile.getName(), dotFile.getName());
         assertEquals(expectedDotFile.getSeq(), dotFile.getSeq());
         assertEquals(expectedDotFile.getDot(), dotFile.getDot());
-        DotFileCreatorTest.deleteOutDir(outPath);
+        DotFileCreatorTest.deleteOutDir(outPath, 2);
     }
 }
