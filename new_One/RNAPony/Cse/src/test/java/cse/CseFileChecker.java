@@ -6,6 +6,7 @@ import utils.FileChecker;
 import utils.Utils;
 
 import java.io.*;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,8 +24,8 @@ public class CseFileChecker extends FileChecker {
     @Override
     public void checkFile(String sourceFileName, String cppFileName, String javaFileName){
         PreparePaths(cppFileName, javaFileName, CseFileChecker.class);
-        Utils.changeLogHandler(cse.logger, javaFilePath);
-        cse.compute(sourceFileName);
+        Utils.changeLogHandler(CSE.logger, javaFilePath);
+        cse.compute(Objects.requireNonNull(CseFileChecker.class.getResource("/" + sourceFileName)).getPath());
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
         new File(javaFilePath.toString()).deleteOnExit();
     }

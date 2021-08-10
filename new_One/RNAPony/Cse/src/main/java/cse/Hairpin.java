@@ -59,13 +59,13 @@ public class Hairpin extends CSE{
 
     /**
      * Find sequences from database, which matches
-     * @param MPseqFileName name of file with base Sequence
+     * @param MPseqFilePath path to file with base Sequence
      */
-    public void compute(String MPseqFileName){
+    public void compute(String MPseqFilePath){
         li = 0;
         ok = false;
         int step_origin, nins;
-        initData(MPseqFileName);
+        initData(MPseqFilePath);
         nins = getInsertion();
         step_origin = getSourceSequence().getSeq().length() - 1;
         logger.info(String.format("%s %s %s", getSourceSequence().getName(),

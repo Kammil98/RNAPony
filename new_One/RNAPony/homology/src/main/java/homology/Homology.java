@@ -1,17 +1,19 @@
 package homology;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import models.Sequence;
 import utils.Computable;
 import utils.Utils;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.logging.*;
 
 public class Homology implements Computable {
 
-    public final Logger logger;
+    public static final Logger logger;
     private static final String SEPARATORS, BRACKET1, BRACKET2;
     private final Sequence sequence0;
     private int lbp0;
@@ -24,6 +26,11 @@ public class Homology implements Computable {
         SEPARATORS = " \t\f";
         BRACKET1="([{<ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         BRACKET2=")]}>abcdefghijklmnopqrstuvwxyz";
+        logger = Logger.getLogger(Homology.class.getName());
+        System.setProperty("java.util.logging.SimpleFormatter.format",
+                "%5$s%n");
+        logger.setUseParentHandlers(false);
+        Utils.changeLogHandler(logger);
     }
 
     /**
@@ -35,11 +42,6 @@ public class Homology implements Computable {
         w02 = new ArrayList<>();
         w1 = new ArrayList<>();
         w2 = new ArrayList<>();
-        logger = Logger.getLogger(Homology.class.getName());
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-                "%5$s%n");
-        logger.setUseParentHandlers(false);
-        Utils.changeLogHandler(logger);
     }
 
     public static class HomologyResult{
@@ -92,7 +94,7 @@ public class Homology implements Computable {
     }
 
     /**
-     * Compute homology for single sequence
+     * Compute homology for single sequence.
      * @param sequence sequence Object with given seq and top fields. Contain sequence, to compute homology
      */
     private HomologyResult homology(Sequence sequence){
@@ -114,8 +116,8 @@ public class Homology implements Computable {
     }
 
     /**
-     * initialize lbp0, w01 and w02 values.
-     * Log some basic information about basic sequence
+     * Initialize lbp0, w01 and w02 values.
+     * Log some basic information about basic sequence.
      * @param reader reader to file with sequences
      * @throws IOException  If an I/O error occurs
      */
@@ -138,15 +140,12 @@ public class Homology implements Computable {
     }
 
     /**
-     * compute homology for all sequences in file
-     * @param fileName name of file with sequences
+     * Compute homology for all sequences in file.
+     * @param filePath path to file with sequences
      */
-    public void compute(String fileName){
+    public void compute(String filePath){
 
-        try(BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
-                    )){
+        try(BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             String line;
             ArrayList <String> tokens;
             Sequence sequence;
@@ -165,10 +164,21 @@ public class Homology implements Computable {
                     sequence.setTop(sequence.getTop() + ";" + tokens.get(i + 1));
                 }
                 result = homology(sequence);
-                logger.info(String.format("%s %8.3f %3d", line, (float)(result.homeSeq * 100) / sequence.getSeq().length(), result.homeBp));
+                logger.info(String.format("%s %8.3f %3d", line,
+                        (float)(result.homeSeq * 100) / sequence.getSeq().length(), result.homeBp));
             }
         } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage());
         }
+    }
+
+    /**
+     * Set file, where result resultPath computing will be saved.
+     * Print to standard output, if parameter is null.
+     * @param resultPath path, where results will be saved.
+     */
+    @Override
+    public void changeLogFile(Path resultPath) {
+        Utils.changeLogHandler(logger, resultPath);
     }
 }

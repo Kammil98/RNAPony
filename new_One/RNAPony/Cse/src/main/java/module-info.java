@@ -4,7 +4,9 @@ module Cse {
     requires static lombok;
     requires rnaponyutils;
     requires homology;
+    requires jcommander;
     exports cse;
+    exports csemodels.parameters.converters to jcommander;
     opens cse;
     opens csemodels;
 }

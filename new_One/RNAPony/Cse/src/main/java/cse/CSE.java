@@ -9,6 +9,7 @@ import utils.Computable;
 import utils.Utils;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Predicate;
@@ -17,7 +18,8 @@ import java.util.logging.*;
 public abstract class CSE implements Computable {
     @Setter @Getter
     private int insertion;
-    public final Logger logger;
+    public static final Logger logger;
+    public static final Logger errLog;
     public static final String CHARS_BP1 = "([{<ABCDEFGHIJK";
     public static final String CHARS_BP2 = ")]}>abcdefghijk";
     public static final String BASE = "acgu";
@@ -33,42 +35,46 @@ public abstract class CSE implements Computable {
     @Getter
     private Sequence sourceSequence;
 
+    static {
+        logger = Logger.getLogger(cse.CSE.class.getName());
+        errLog = Logger.getLogger("errLog_" + cse.CSE.class.getName());
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%n");
+        logger.setUseParentHandlers(false);
+        errLog.setUseParentHandlers(false);
+        Utils.changeLogHandler(logger);
+        Utils.changeLogHandler(errLog, Path.of("errApp.txt"));
+    }
+
     /**
-     * Initialize CSE and read database
-     * @param dBFileName name of file with database
+     * Initialize CSE and read database.
+     * @param dBFilePath path to file with database
      * @param insertion number of insertions
      */
-    public CSE(String dBFileName, int insertion){
-        logger = Logger.getLogger(cse.CSE.class.getName());
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-                "%5$s%n");
-        logger.setUseParentHandlers(false);
-        Utils.changeLogHandler(logger);
-
+    public CSE(String dBFilePath, int insertion){
         this.setInsertion(insertion);
         sequences = new ArrayList<>();
         seqs = new ArrayList<>();
         tops = new ArrayList<>();
         bbps = new ArrayList<>();
         sourceSequence = new Sequence();
-        readDataBase(dBFileName);
+        readDataBase(dBFilePath);
     }
 
     /**
      * Main function, which calculate
-     * and display sequences
+     * and display sequences.
      * @param MPseqFileName name of file with base Sequence
      */
     public abstract void compute(String MPseqFileName);
 
     /**
      * Read necessary data from files.
-     * All files should be placed in "files" folder
-     * @param MPseqFileName name of file with one sequence
+     * All files should be placed in "files" folder.
+     * @param MPseqFilePath path to file with one sequence
      */
-    public void initData(String MPseqFileName){
+    public void initData(String MPseqFilePath){
         sourceSequence = new Sequence();
-        readMpSeq(MPseqFileName);
+        readMpSeq(MPseqFilePath);
         setSeqs(Utils.createArray(sourceSequence.getSeq(), SEPARATORS));
         setTops(Utils.createArray(sourceSequence.getTop(), SEPARATORS));
         setBbps(Utils.createArrayInt("", SEPARATORS));
@@ -76,13 +82,10 @@ public abstract class CSE implements Computable {
 
     /**
      * Read necessary data about main sequence from files.
-     * @param fileName name of file with one sequence
+     * @param filePath path to file with one sequence
      */
-    public void readMpSeq(String fileName){
-        try(BufferedReader reader =
-                    new BufferedReader(
-                    new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
-                    )){
+    public void readMpSeq(String filePath){
+        try(BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             String line;
             for(int lineNo = 1; (line = reader.readLine()) != null; lineNo++){
                 switch(lineNo){
@@ -98,20 +101,17 @@ public abstract class CSE implements Computable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "Problem with opening file " + filePath + ". More information at errApp.txt");
+            errLog.log(Level.SEVERE, e.getMessage());
         }
     }
 
     /**
      * Read necessary data about sequences from database.
-     * @param fileName name of file with database of sequences
+     * @param filePath path to file with database of sequences
      */
-    public void readDataBase(String fileName){
-        try(BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(getClass().getResourceAsStream("/" + fileName))
-                            )){
+    public void readDataBase(String filePath){
+        try(BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             String line;
             String pdb, chain, seq, top, bp;
             double resol;
@@ -132,7 +132,8 @@ public abstract class CSE implements Computable {
                 }
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, "Problem with opening file " + filePath + ". More information at errApp.txt");
+            errLog.log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -157,7 +158,7 @@ public abstract class CSE implements Computable {
      * @param testedPair begin and end of tested string of nucleotides
      * @return true, if is not covering any of strings in given list
      */
-    public boolean isOk(ArrayList<Pair> pairs, Pair testedPair){
+    boolean isOk(ArrayList<Pair> pairs, Pair testedPair){
         Predicate<Pair> isFirstBetween = pair -> pair.isPointBetweenInclusive(testedPair.getFirst());
         Predicate<Pair> isSecondBetween = pair -> pair.isPointBetweenInclusive(testedPair.getSecond());
         Predicate<Pair> isInside = pair -> pair.isInsideGivenPair(testedPair);
@@ -224,5 +225,15 @@ public abstract class CSE implements Computable {
             }
             concatTopAndSeq(newSequence, sequence, tmp, 0, vlength_seq.get(0));
         }
+    }
+
+    /**
+     * Set file, where result resultPath computing will be saved.
+     * Print to standard output, if parameter is null.
+     * @param resultPath path, where results will be saved.
+     */
+    @Override
+    public void changeLogFile(Path resultPath) {
+        Utils.changeLogHandler(logger, resultPath);
     }
 }

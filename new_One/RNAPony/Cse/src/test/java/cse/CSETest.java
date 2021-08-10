@@ -5,6 +5,7 @@ import models.Sequence;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,7 +15,8 @@ class CSETest {
 
     @BeforeEach
     public void init(){
-        cse = new Hairpin("cse.txt", 0);
+        String dbPath = Objects.requireNonNull(CSETest.class.getResource("/cse.txt")).getPath();
+        cse = new Hairpin(dbPath, 0);
     }
 
     @Test
@@ -24,7 +26,7 @@ class CSETest {
         expectedSeq.setName("hairpin");
         expectedSeq.setSeq("CAGCGUCAAGCCCCGGCUUGCUG");
         expectedSeq.setTop("((((....((.[[[[[)).))))");
-        cse.readMpSeq("hairpin.dot");
+        cse.readMpSeq(Objects.requireNonNull(CSETest.class.getResource("/hairpin.dot")).getPath());
         assertEquals(expectedSeq.getName(), cse.getSourceSequence().getName(), msg);
         assertEquals(expectedSeq.getSeq(), cse.getSourceSequence().getSeq(), msg);
         assertEquals(expectedSeq.getTop(), cse.getSourceSequence().getTop(), msg);
@@ -40,7 +42,8 @@ class CSETest {
         expectedSeq4 = new Sequence("1a3m", "A_B", 999.99d, "GGCGUCACACCUUC;GGGUGAAGUCGCC;",
                 "((((.(.((((.....))))..).)))).", "27;25;23;21;0;17;0;12;10;8;6;0;0;0;0;0;-6;-8;-10;-12;0;0;" +
                 "-17;0;-21;-23;-25;-27;0",0);
-        cse.readDataBase("cse.txt");
+        cse.getSequences().clear();
+        cse.readDataBase(Objects.requireNonNull(CSETest.class.getResource("/cse.txt")).getPath());
         msg = "Inapropriate reading first sequence from cse.txt file";
         assertEquals(expectedSeq0.toString(), cse.getSequences().get(0).toString(), msg);
         msg = "Inapropriate reading nth sequence from cse.txt file";

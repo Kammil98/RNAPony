@@ -3,13 +3,15 @@ package cse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.Objects;
 
 
 class LoopTest{
     private static CseFileChecker cseFileChecker;
     @BeforeAll
     static void setUp(){
-        cseFileChecker = new CseFileChecker(new Loop("cse.txt", 0, false));
+        String dbPath = Objects.requireNonNull(HairpinTest.class.getResource("/cse.txt")).getPath();
+        cseFileChecker = new CseFileChecker(new Loop(dbPath, 0, false));
     }
 
     @Test

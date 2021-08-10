@@ -4,6 +4,7 @@ import utils.FileChecker;
 import utils.Utils;
 
 import java.io.File;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +21,7 @@ public class HomologyFileChecker extends FileChecker {
         PreparePaths(cppFileName, javaFileName, HomologyFileChecker.class);
 
         Utils.changeLogHandler(homology.logger, javaFilePath);
-        homology.compute(sourceFileName);
+        homology.compute(Objects.requireNonNull(getClass().getResource("/" + sourceFileName)).getPath());
         assertTrue(isContentEqual(cppFilePath.toString(), javaFilePath.toString()));
         new File(javaFilePath.toString()).deleteOnExit();
     }
