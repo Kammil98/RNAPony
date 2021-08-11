@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -63,6 +62,7 @@ public class WorkSubmitter implements Runnable, Closeable {
                     deletedFiles.add(task.get().getFileName().toString());
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
+                    Main.errLogger.severe(e.getMessage());
                 }
                 return true;
             }
@@ -124,6 +124,7 @@ public class WorkSubmitter implements Runnable, Closeable {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Main.errLogger.severe(e.getMessage());
             }
             for (Future<Path> task : tasks) {
                 if (task.isDone()) {
@@ -169,6 +170,7 @@ public class WorkSubmitter implements Runnable, Closeable {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Main.errLogger.severe(e.getMessage());
             }
             updateDB(DBDownloader.downloadPath);
         }
@@ -185,6 +187,7 @@ public class WorkSubmitter implements Runnable, Closeable {
                 task.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                Main.errLogger.severe(e.getMessage());
             }
         });
         Main.stdLogger.info("records to save: " + DBDownloader.records.size());

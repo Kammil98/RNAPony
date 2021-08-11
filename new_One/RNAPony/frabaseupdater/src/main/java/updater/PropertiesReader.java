@@ -7,6 +7,8 @@ import models.parameters.PreprocessType;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -101,27 +103,32 @@ public class PropertiesReader {
             case "dayOfUpdate":
                 int day = Integer.parseInt(val);
                 if(day >= 1 && day <= 7){
-                    Main.dayOfWeek = day;
+                    Main.dayOfWeek = DayOfWeek.of(day);
                 } else{
                     Main.verboseInfo("Incorrect day given:" + val + ". Correct day values:" +
                                     "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
                                     "Setting up default day: " + defaultProperties.getProperty(key.toString()),
                             1,
                             Level.SEVERE);
-                    Main.dayOfWeek = day;
+                    Main.dayOfWeek = DayOfWeek.of(day);
                 }
                 break;
             case "hourOfUpdate":
+                LocalTime time;
                 try {
-                    Main.time = LocalTime.parse(val);
+                    time = LocalTime.parse(val);
                 }
                 catch (DateTimeParseException e){
                     Main.verboseInfo("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
                                     "Setting up default time: " + defaultProperties.getProperty(key.toString()),
                             1,
                             Level.SEVERE);
-                    Main.time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
+                    time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
                 }
+                Main.time = LocalDateTime.now()
+                        .withHour(time.getHour())
+                        .withMinute(time.getMinute())
+                        .withSecond(time.getSecond());
                 break;
         }
     }
@@ -135,5 +142,7 @@ public class PropertiesReader {
         loadArgs(args);
         loadPropertyFile();
         loadArgs(args);//second time, because properties from file overwritten this properties.
+        //Get date, because till now only time is set, because date could have been set before day of week
+        Main.time = TimerUpdateTask.getNextDate(Main.time.toLocalTime(), Main.dayOfWeek);
     }
 }
