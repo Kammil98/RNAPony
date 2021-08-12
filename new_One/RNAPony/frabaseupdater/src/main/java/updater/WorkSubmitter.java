@@ -23,7 +23,7 @@ public class WorkSubmitter implements Runnable, Closeable {
     private static final AtomicInteger downloadedFileNo = new AtomicInteger();
     private final HashSet<String> files = new HashSet<>(DBDownloader.getFilesBatchSize());
     private final ArrayList<Future<Path>> tasks = new ArrayList<>(200);
-    private final ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
+    private final ExecutorService executor = Executors.newFixedThreadPool(Main.getWorkersNo());
     @Getter(AccessLevel.PACKAGE)
     private static final AtomicInteger recordsNo = new AtomicInteger();
     @Setter

@@ -179,7 +179,7 @@ public class Worker implements Callable<Path> {
                 .resolve(unpackedFileName);
         Main.verboseInfo("Start processing " +  fileName + ". " +
                 processedFiles.get() + "/" +  DBDownloader.getFileNo().get() + " files processed. " +
-                WorkSubmitter.getDownloadedFileNo().get() + "/" + DBDownloader.getFileNo().get() + " files downloaded", 2);
+                WorkSubmitter.getDownloadedFileNo().get() + "/" + DBDownloader.getFileNo().get() + " files downloaded.", 2);
         if(isUnchanged(filePath)){
             cleanUp(start, filePath);
             Main.verboseInfo(filePath.getFileName() + " is unchanged!!!", 3);

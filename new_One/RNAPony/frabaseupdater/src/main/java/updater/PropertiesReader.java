@@ -130,6 +130,19 @@ public class PropertiesReader {
                         .withMinute(time.getMinute())
                         .withSecond(time.getSecond());
                 break;
+            case "workers":
+                try {
+                    Main.setWorkersNo(Integer.parseInt(val));
+
+                }catch (NumberFormatException e){
+                    Main.verboseInfo("Incorrect format of natural number: " + val +
+                                    ". Setting up default workers number: " +
+                                    defaultProperties.getProperty(key.toString()),
+                            1,
+                            Level.SEVERE);
+                    Main.setWorkersNo(Integer.parseInt(defaultProperties.getProperty(key.toString())));
+                }
+                break;
         }
     }
 

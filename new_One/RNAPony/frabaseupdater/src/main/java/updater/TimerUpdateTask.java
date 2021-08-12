@@ -72,10 +72,11 @@ public class TimerUpdateTask extends TimerTask {
         Path downloadDir = loader.downloadNewStructures();
         submitter.setDownloading(false);//notify submitter, that downloading stopped
         //loader.updateDB(downloadDir);
-        Main.verboseInfo(Preprocessor.getFilesWithAllModelsEmptyNo().get() + " files have 0 models with strands " +
-                "available to process.\n" + Worker.getProcessedModels() + " models were processed.", 1);
         try {
             submitterThread.join();
+            Main.verboseInfo(Preprocessor.getFilesWithAllModelsEmptyNo().get() +
+                    " files have 0 models with strands available to process.\nModels from " +
+                    Worker.getProcessedModels() + " different files were processed.", 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -90,7 +91,8 @@ public class TimerUpdateTask extends TimerTask {
         int affectedRows;
         try(DBUpdater updater = new DBUpdater("rnapony")) {
             affectedRows = updater.addOrUpdateNewRecords(Main.frabaseDir.resolve("DBrecords.txt"));
-            Main.verboseInfo(affectedRows + " rows were added or updated.", 1);
+            Main.verboseInfo(affectedRows + " rows were added or updated(including unchanged models from " +
+                    "updated files.", 1);
             affectedRows = updater.deleteOldRecords();
             Main.verboseInfo(affectedRows + " rows were deleted.", 1);
         } catch (SQLException throwables) {
@@ -102,12 +104,8 @@ public class TimerUpdateTask extends TimerTask {
 
     @Override
     public void run() {
-        System.out.println("Executing at " + LocalTime.now());
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //downloadDataAndUpdateRNAfrabase(args);
+        Main.verboseInfo("\n\n\n\t\t\t\t\t\tStarting Updating RNAfrabase at " + LocalTime.now() +
+                "\t\t\t\t\t\t\n\n\n", 1);
+        downloadDataAndUpdateRNAfrabase(args);
     }
 }

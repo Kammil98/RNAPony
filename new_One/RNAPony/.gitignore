@@ -1,6 +1,9 @@
+#tmp folder, which is created during RNAfrabase updates.
 /frabase_update/
+#Files for debuging
 *.cif
 *.pdb
+*.properties
 errApp.txt
 ### Files, which isn't mine. ###
 # Ask dr. Maciej Antczak for rnapdbee

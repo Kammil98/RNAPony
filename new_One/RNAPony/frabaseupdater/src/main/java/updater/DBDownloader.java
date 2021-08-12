@@ -174,7 +174,6 @@ public class DBDownloader {
      */
     public Path downloadNewStructures(){
         String command;
-        boolean displayInfo = (Main.getVerboseMode() >= 2);
         Utils.createDirIfNotExist(downloadPath.toFile(), Main.stdLogger);
 
         Main.verboseInfo("Downloading list of new structures.", 2);
@@ -183,7 +182,7 @@ public class DBDownloader {
         Path downloadScriptPath = Path.of(
                 Objects.requireNonNull(getClass().getResource("/batch_download.sh")).getPath());
         command = downloadScriptPath + " -f " + newStrucListPath + " -o " + downloadPath.toAbsolutePath() + " -c";
-        Utils.execCommand(command, displayInfo, Main.stdLogger, Main.errLogger);
+        Utils.execCommand(command, Main.stdLogger, Main.errLogger);
         return downloadPath;
     }
 
@@ -238,29 +237,4 @@ public class DBDownloader {
         DBDownloader.saveQueueToFile(queue, false, filePath);
     }
 
-    /**
-     * Compute records for all 3D structures under
-     * given directory
-     * @param dir directory with 3D structures
-     */
-    public void updateDBAfterDownload(final Path dir){
-        List<Callable<Path>> callables = new ArrayList<>();
-        Main.verboseInfo("Computing records.", 1);
-        FilenameFilter filter = (dir1, name) -> name.endsWith(".gz");
-        String[] fileList = Objects.requireNonNull(dir.toFile().list(filter));
-        ExecutorService executor = Executors.newFixedThreadPool(Main.WorkersNo);
-
-        prepareFiles();
-        fileNo.set(fileList.length);
-        for (String file : fileList) {
-            callables.add(new Worker(dir.resolve(file)));
-        }
-        try {
-            executor.invokeAll(callables);
-            executor.shutdown();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        DBDownloader.saveQueueToFile(records, true, newRecordsPath);
-    }
 }
