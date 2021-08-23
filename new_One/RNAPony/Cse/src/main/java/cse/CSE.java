@@ -208,7 +208,7 @@ public abstract class CSE implements Computable {
         }
         else {
             for(int i = 0; i < vbp1_pos.size(); i++ ){
-                if(vbp1_pos.get(i) < vlength_seq.get(0) && vbp1_pos.get(i) >= vlength_seq.get(0)){
+                if(vbp1_pos.get(i) < vlength_seq.get(0) && vbp2_pos.get(i) >= vlength_seq.get(0)){
                     c1 = CHARS_BP2.charAt(vbp_order.get(i));
                     c2 = CHARS_BP1.charAt(vbp_order.get(i));
                     tmp.setCharAt(vbp1_pos.get(i), c1);
