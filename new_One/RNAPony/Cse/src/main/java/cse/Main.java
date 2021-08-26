@@ -33,7 +33,7 @@ public class Main {
             "of iterations of program.")
     private static int insertion = 0;
 
-    @Parameter(names = {"--loop", "-l"}, description = "Insertion value - parameter for computation " +
+    @Parameter(names = {"--loop", "-l"}, description = "Open loop - parameter for computation " +
             "of type loop. Possible values are: true, false.")
     private static boolean openLoop = false;
 
