@@ -13,7 +13,7 @@ public class Hairpin extends CSE{
     private boolean ok;
 
     /**
-     * Initialize Hairpin and read database
+     * Initialize Hairpin and read database.
      * @param dBFileName name of file with database
      * @param insertion number of insertions
      */
@@ -22,7 +22,7 @@ public class Hairpin extends CSE{
     }
 
     /**
-     * Compute, wheather given sequence match or not
+     * Compute, wheather given sequence match or not.
      * @param sequence sequence to check
      * @param bbpNo counter from outer function
      * @param i1 counter from outer function

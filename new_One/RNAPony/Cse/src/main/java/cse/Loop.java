@@ -17,7 +17,7 @@ public class Loop extends CSE{
     private boolean openLoop;
 
     /**
-     * Initialize Loop and read database
+     * Initialize Loop and read database.
      * @param dBFileName name of file with database
      * @param insertion number of insertions
      * @param openLoop true, if it is openLoop, false otherwise
@@ -28,7 +28,7 @@ public class Loop extends CSE{
     }
 
     /**
-     * Finding subsequence in given sequence and print it
+     * Finding subsequence in given sequence and print it.
      * @param sequence sequence with subsequence to extract
      * @param pairs array of pairs
      * @param steps array of steps
@@ -64,7 +64,7 @@ public class Loop extends CSE{
     }
 
     /**
-     * initialize arrays
+     * Initialize arrays.
      * @param steps array of steps
      * @param steps_origin array of origin steps
      * @param direct direct array
@@ -79,7 +79,7 @@ public class Loop extends CSE{
     }
 
     /**
-     * Compute values of start and limit
+     * Compute values of start and limit.
      * @param sequence currently checking sequence
      * @param firstStep first step
      */
@@ -124,7 +124,7 @@ public class Loop extends CSE{
     }
 
     /**
-     * Find sequences from database, which matches
+     * Find sequences from database, which matches.
      * @param MPseqFileName name of file with base Sequence
      */
     public void compute(String MPseqFileName){

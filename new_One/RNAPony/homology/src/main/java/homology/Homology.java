@@ -34,7 +34,7 @@ public class Homology implements Computable {
     }
 
     /**
-     * Initiliza Homology Object
+     * Initialize Homology Object.
      */
     public Homology(){
         sequence0 = new Sequence();

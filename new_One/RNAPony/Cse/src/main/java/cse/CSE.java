@@ -69,7 +69,6 @@ public abstract class CSE implements Computable {
 
     /**
      * Read necessary data from files.
-     * All files should be placed in "files" folder.
      * @param MPseqFilePath path to file with one sequence
      */
     public void initData(String MPseqFilePath){
@@ -153,7 +152,7 @@ public abstract class CSE implements Computable {
 
     /**
      * Check if tested string of nucleotides cover another
-     * string of nucleotides from list
+     * string of nucleotides from list.
      * @param pairs list of begins and ends of strings
      * @param testedPair begin and end of tested string of nucleotides
      * @return true, if is not covering any of strings in given list
@@ -167,7 +166,7 @@ public abstract class CSE implements Computable {
     }
 
     /**
-     * concat Top from newSequence with fragment of tmp string from n to n + vlength
+     * Concat Top from newSequence with fragment of tmp string from n to n + vlength
      * and concat Seq from newSequence with fragment of sequence.seq string from n to n + vlength
      * @param newSequence sequence to concat strings
      * @param sequence sequence with substring to add to Seq
