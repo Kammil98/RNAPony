@@ -2,6 +2,7 @@ package updater;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import models.Database;
 import models.parameters.PreprocessType;
 
 import java.io.FileInputStream;
@@ -31,7 +32,7 @@ public class PropertiesReader {
      */
     private static void loadArgs(String[] args) {
         JCommander jCommander = JCommander.newBuilder()
-                .addObject(new Object[]{new PropertiesReader(), new Preprocessor()})
+                .addObject(new Object[]{new PropertiesReader(), new Preprocessor(), new Database()})
                 .build();
         jCommander.parse(args);
         if (help) {
@@ -78,6 +79,65 @@ public class PropertiesReader {
             setProperty(key);
     }
 
+    private static void setWorker(Object key, String val){
+        try {
+            Main.setWorkersNo(Integer.parseInt(val));
+
+        }catch (NumberFormatException e){
+            Main.verboseInfo("Incorrect format of natural number: " + val +
+                            ". Setting up default workers number: " +
+                            defaultProperties.getProperty(key.toString()),
+                    1,
+                    Level.SEVERE);
+            Main.setWorkersNo(Integer.parseInt(defaultProperties.getProperty(key.toString())));
+        }
+    }
+
+    private static void setUpdateHour(Object key, String val){
+        LocalTime time;
+        try {
+            time = LocalTime.parse(val);
+        }
+        catch (DateTimeParseException e){
+            Main.verboseInfo("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
+                            "Setting up default time: " + defaultProperties.getProperty(key.toString()),
+                    1,
+                    Level.SEVERE);
+            time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
+        }
+        Main.time = LocalDateTime.now()
+                .withHour(time.getHour())
+                .withMinute(time.getMinute())
+                .withSecond(time.getSecond());
+    }
+
+    private static void setUpdateDay(Object key, String val){
+        int day = Integer.parseInt(val);
+        if(day >= 1 && day <= 7){
+            Main.dayOfWeek = DayOfWeek.of(day);
+        } else{
+            Main.verboseInfo("Incorrect day given:" + val + ". Correct day values:" +
+                            "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
+                            "Setting up default day: " + defaultProperties.getProperty(key.toString()),
+                    1,
+                    Level.SEVERE);
+            Main.dayOfWeek = DayOfWeek.of(day);
+        }
+    }
+
+    private static void setPreprocessType(Object key, String val){
+        try {
+            Preprocessor.setPreprocessType(PreprocessType.valueOf(val.toUpperCase()));
+        }catch ( IllegalArgumentException e){
+            Main.verboseInfo("Incorrect type of preprocessing: " + val + ". Correct types are: " +
+                            Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
+                            defaultProperties.getProperty(key.toString()),
+                    1,
+                    Level.SEVERE);
+            Preprocessor.setPreprocessType(PreprocessType.valueOf(defaultProperties.getProperty(key.toString())));
+        }
+    }
+
     /**
      * Set single property.
      *
@@ -89,59 +149,34 @@ public class PropertiesReader {
         val = customProperties.getProperty(key.toString());
         switch (key.toString()) {
             case "preprocessType":
-                try {
-                    Preprocessor.setPreprocessType(PreprocessType.valueOf(val.toUpperCase()));
-                }catch ( IllegalArgumentException e){
-                    Main.verboseInfo("Incorrect type of preprocessing: " + val + ". Correct types are: " +
-                                    Arrays.toString(PreprocessType.values()) + ". Setting up default type: " +
-                                    defaultProperties.getProperty(key.toString()),
-                            1,
-                            Level.SEVERE);
-                    Preprocessor.setPreprocessType(PreprocessType.valueOf(defaultProperties.getProperty(key.toString())));
-                }
+                setPreprocessType(key, val);
                 break;
             case "dayOfUpdate":
-                int day = Integer.parseInt(val);
-                if(day >= 1 && day <= 7){
-                    Main.dayOfWeek = DayOfWeek.of(day);
-                } else{
-                    Main.verboseInfo("Incorrect day given:" + val + ". Correct day values:" +
-                                    "1 = Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday. " +
-                                    "Setting up default day: " + defaultProperties.getProperty(key.toString()),
-                            1,
-                            Level.SEVERE);
-                    Main.dayOfWeek = DayOfWeek.of(day);
-                }
+                setUpdateDay(key, val);
                 break;
             case "hourOfUpdate":
-                LocalTime time;
-                try {
-                    time = LocalTime.parse(val);
-                }
-                catch (DateTimeParseException e){
-                    Main.verboseInfo("Incorrect format of time: " + val + ". Correct format is: hh:mm:ss. " +
-                                    "Setting up default time: " + defaultProperties.getProperty(key.toString()),
-                            1,
-                            Level.SEVERE);
-                    time = LocalTime.parse(defaultProperties.getProperty(key.toString()));
-                }
-                Main.time = LocalDateTime.now()
-                        .withHour(time.getHour())
-                        .withMinute(time.getMinute())
-                        .withSecond(time.getSecond());
+                setUpdateHour(key, val);
                 break;
             case "workers":
-                try {
-                    Main.setWorkersNo(Integer.parseInt(val));
-
-                }catch (NumberFormatException e){
-                    Main.verboseInfo("Incorrect format of natural number: " + val +
-                                    ". Setting up default workers number: " +
-                                    defaultProperties.getProperty(key.toString()),
-                            1,
-                            Level.SEVERE);
-                    Main.setWorkersNo(Integer.parseInt(defaultProperties.getProperty(key.toString())));
-                }
+                setWorker(key, val);
+                break;
+            case "dbHost":
+                Database.setDbHost(val);
+                break;
+            case "dbPort":
+                Database.setDbPort(val);
+                break;
+            case "dbUser":
+                Database.setDbUser(val);
+                break;
+            case "dbPassword":
+                Database.setDbUserPasswd(val);
+                break;
+            case "dbName":
+                Database.setDbName(val);
+                break;
+            case "dbTable":
+                Database.setDbTableName(val);
                 break;
         }
     }

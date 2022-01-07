@@ -21,7 +21,7 @@ public class Preprocessor {
     @Getter
     private static final AtomicInteger filesWithAllModelsEmptyNo = new AtomicInteger();
     @Setter @Getter
-    @Parameter(names = {"--type", "-t"}, converter = PreprocessTypeConverter.class,
+    @Parameter(names = {"--type", "-T"}, converter = PreprocessTypeConverter.class,
             description = "If equals all, then all models in file are processed." +
                     "If equals first, then only first model in file is processed. Possible types are: all, first.")
     private static PreprocessType preprocessType = null;

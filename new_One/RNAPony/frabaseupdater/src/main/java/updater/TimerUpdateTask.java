@@ -89,15 +89,15 @@ public class TimerUpdateTask extends TimerTask {
      */
     private static void updateDB(){
         int affectedRows;
-        try(DBUpdater updater = new DBUpdater("rnapony")) {
+        try(DBUpdater updater = new DBUpdater()) {
             affectedRows = updater.addOrUpdateNewRecords(Main.frabaseDir.resolve("DBrecords.txt"));
             Main.verboseInfo(affectedRows + " rows were added or updated(including unchanged models from " +
                     "updated files.", 1);
             affectedRows = updater.deleteOldRecords();
             Main.verboseInfo(affectedRows + " rows were deleted.", 1);
         } catch (SQLException throwables) {
-            Main.verboseInfo("Couldn't connect to database: ", 1);
-            Main.errLogger.severe("Couldn't connect to database: ");
+            Main.verboseInfo("Couldn't connect to database: " + throwables.getMessage(), 1);
+            Main.errLogger.severe("Couldn't connect to database: " + throwables.getMessage());
             System.exit(-1);
         }
     }

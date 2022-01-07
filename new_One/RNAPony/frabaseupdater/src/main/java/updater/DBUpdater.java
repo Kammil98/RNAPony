@@ -2,6 +2,7 @@ package updater;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import models.Database;
 import models.Structure;
 import models.DBrecord;
 
@@ -9,6 +10,7 @@ import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.sql.*;
+import java.time.DayOfWeek;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,25 +22,28 @@ public class DBUpdater implements Closeable {
     private static final ConcurrentLinkedQueue<Structure> updatedFiles = new ConcurrentLinkedQueue<>();
     public static final Path updatedStructuresPath = Main.frabaseDir.resolve("UpdatedStructures.txt");
     private static final int queryBatchSize = 1000;
-    private final String table;
+
+    public DBUpdater() throws SQLException {
+        this(Database.getDbTableName());
+    }
 
     public DBUpdater(String tableName) throws SQLException {
-        String jdbcUrl = "jdbc:postgresql://localhost:5432/rnaponydb";
-        String user = "rnaponyadmin";
-        String pass = "rnapony";
-        conn = DriverManager.getConnection(jdbcUrl, user, pass);
+        String jdbcUrl = "jdbc:postgresql://" + Database.getDbHost() + ":" +
+                Database.getDbPort() + "/" + Database.getDbName();
+        conn = DriverManager.getConnection(jdbcUrl, Database.getDbUser(), Database.getDbUserPasswd());
         Statement stmt = conn.createStatement();
-        table = tableName;
-        String CreateSql = "Create Table IF NOT EXISTS " + table + "(" +
-                "id varchar(4), " +
-                "modelNo int, " +
+        Database.setDbTableName(tableName);
+        String CreateSql = "Create Table IF NOT EXISTS " + Database.getDbTableName() + "(" +
+                "id SERIAL PRIMARY KEY, " +
+                "pdbid varchar(4), " +
+                "modelno int, " +
                 "chain text NOT NULL, " +
                 "resol numeric(5,2) NOT NULL," +
                 "seq text NOT NULL," +
                 "dot text NOT NULL," +
-                "dotIntervals text NOT NULL," +
-                "maxOrder int NOT NULL," +
-                "PRIMARY KEY (id, modelNo) )";
+                "dotintervals text NOT NULL," +
+                "maxorder int NOT NULL," +
+                "UNIQUE (pdbid, modelno) )";
         stmt.executeUpdate(CreateSql);
         stmt.close();
     }
@@ -83,14 +88,14 @@ public class DBUpdater implements Closeable {
     private int addRecordsToDB(ArrayList<DBrecord> records){
         int affectedRows = 0;
         int[] affectedRowsList;
-        String batchCommand = "INSERT INTO " + table +
-                "  (id, modelNo, chain, resol, seq, dot, dotIntervals, maxOrder) " +
-                "VALUES  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id, modelNo) DO UPDATE SET " +
+        String batchCommand = "INSERT INTO " + Database.getDbTableName() +
+                "  (pdbid, modelno, chain, resol, seq, dot, dotintervals, maxorder) " +
+                "VALUES  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(pdbid, modelno) DO UPDATE SET " +
                 "chain=excluded.chain, " +
                 "resol=excluded.resol, " +
                 "seq=excluded.seq, " +
                 "dot=excluded.dot, " +
-                "dotIntervals=excluded.dotIntervals, " +
+                "dotintervals=excluded.dotintervals, " +
                 "maxorder=excluded.maxorder;";
         try (PreparedStatement pstmt = conn.prepareStatement(batchCommand)){
             conn.setAutoCommit(false);
@@ -170,8 +175,8 @@ public class DBUpdater implements Closeable {
      * @return Query, to delete old models.
      */
     private String getDeleteQuery(){
-        StringBuilder sqlQuery = new StringBuilder("DELETE FROM " + table + " WHERE id = ? AND " +
-                "(? OR modelNo NOT IN ( ");
+        StringBuilder sqlQuery = new StringBuilder("DELETE FROM " + Database.getDbTableName() + " WHERE pdbid = ? AND " +
+                "(? OR modelno NOT IN ( ");
         sqlQuery.append("?,".repeat(Math.max(0, Structure.getMaxModelsNo())));
         sqlQuery.deleteCharAt(sqlQuery.length() - 1);
         sqlQuery.append(" ) )");
