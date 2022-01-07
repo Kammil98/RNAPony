@@ -6,7 +6,6 @@ import lombok.Setter;
 
 
 public class Database {
-    //Commented values are for testing environment and don't suit production environment
     @Parameter(names = {"--host", "-h"}, description = "Adress of host with PostgreSQL database.")
     @Getter
     @Setter
