@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+rnapony/**/cse_hairpin
+rnapony/**/cse_loop
+rnapony/**/cse_loop_open
 
 # Precompiled Headers
 *.gch
